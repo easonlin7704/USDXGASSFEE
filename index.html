@@ -3,1175 +3,2255 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>穩定幣鏈上分析 · Stablecoin × Chain × Fee</title>
+<title>穩定幣於全球法人交易間的規模及台灣銀行所能介入之商業模式分析</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Serif+TC:wght@400;600;900&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Noto+Serif+TC:wght@300;400;500;600;700;900&family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0e0d;
-    --bg-2: #11181a;
-    --panel: #141c1e;
-    --panel-2: #1a2326;
-    --line: #2a3a3e;
-    --text: #e8f0ee;
-    --text-dim: #8da09c;
-    --text-faint: #5a6e6a;
-    --accent: #00ff9d;
-    --accent-2: #7df5c4;
-    --warn: #ffcb4a;
-    --danger: #ff6b6b;
-    --usdt: #50af95;
-    --usdc: #2775ca;
+    --bg: #f5f1ea;
+    --bg-cream: #faf6ef;
+    --paper: #ffffff;
+    --ink: #1a1814;
+    --ink-2: #2e2a24;
+    --ink-dim: #5a5449;
+    --ink-faint: #8a8478;
+    --rule: #d9d2c3;
+    --rule-soft: #e8e2d5;
+    --accent: #8b2635;  /* 深酒紅 */
+    --accent-2: #c85a4a;
+    --gold: #b8893c;
+    --navy: #1e3a5f;
+    --positive: #2d6a4f;
+    --negative: #8b2635;
+    --highlight: #fff4cc;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; font-size: 16px; }
 
   body {
     background: var(--bg);
-    color: var(--text);
-    font-family: 'Space Grotesk', 'Noto Serif TC', sans-serif;
-    font-weight: 300;
-    line-height: 1.7;
-    overflow-x: hidden;
+    color: var(--ink);
+    font-family: 'Noto Serif TC', 'Cormorant Garamond', Georgia, serif;
+    font-weight: 400;
+    line-height: 1.75;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
     background-image:
-      radial-gradient(circle at 10% 20%, rgba(0, 255, 157, 0.04) 0%, transparent 40%),
-      radial-gradient(circle at 90% 80%, rgba(39, 117, 202, 0.04) 0%, transparent 40%);
-    background-attachment: fixed;
+      repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 2px,
+        rgba(139, 38, 53, 0.008) 2px,
+        rgba(139, 38, 53, 0.008) 3px
+      );
   }
 
-  /* Grid noise texture */
-  body::before {
+  /* ========== LAYOUT ========== */
+  .page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 40px;
+    background: var(--paper);
+    box-shadow: 0 0 60px rgba(0,0,0,0.04);
+    position: relative;
+  }
+
+  .page::before, .page::after {
     content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-    background-size: 60px 60px;
-    pointer-events: none;
-    z-index: 1;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--rule-soft);
   }
+  .page::before { left: 20px; }
+  .page::after { right: 20px; }
 
-  .container {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 32px;
+  /* ========== COVER ========== */
+  .cover {
+    padding: 140px 40px 100px;
+    text-align: center;
+    border-bottom: 3px double var(--ink);
     position: relative;
-    z-index: 2;
   }
 
-  /* ========== HERO ========== */
-  .hero {
-    padding: 80px 32px 60px;
-    border-bottom: 1px solid var(--line);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .hero-inner {
-    max-width: 1280px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 2;
-  }
-
-  .tag-line {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    font-family: 'JetBrains Mono', monospace;
+  .cover-mark {
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
-    letter-spacing: 0.3em;
+    letter-spacing: 0.4em;
     text-transform: uppercase;
     color: var(--accent);
-    margin-bottom: 28px;
+    margin-bottom: 40px;
   }
 
-  .tag-line::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, var(--accent), transparent);
-    max-width: 200px;
+  .cover-mark::before, .cover-mark::after {
+    content: '◆';
+    display: inline-block;
+    margin: 0 16px;
+    color: var(--gold);
+    font-size: 8px;
+    vertical-align: middle;
   }
 
-  .pulse {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--accent);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.3); }
-  }
-
-  h1 {
+  h1.cover-title {
     font-family: 'Noto Serif TC', serif;
+    font-size: 42px;
     font-weight: 900;
-    font-size: clamp(40px, 6vw, 84px);
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    margin-bottom: 24px;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    margin-bottom: 48px;
+    color: var(--ink);
   }
 
-  h1 .accent {
+  .cover-title .em {
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
     color: var(--accent);
+    font-weight: 600;
+  }
+
+  .cover-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--ink-dim);
+    margin-bottom: 64px;
+    font-weight: 400;
+  }
+
+  .cover-ornament {
+    width: 60px;
+    height: 1px;
+    background: var(--ink);
+    margin: 40px auto;
+    position: relative;
+  }
+  .cover-ornament::before {
+    content: '§';
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--paper);
+    padding: 0 12px;
+    color: var(--accent);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
     font-style: italic;
   }
 
-  h1 .slash {
-    color: var(--text-faint);
-    font-weight: 300;
-    margin: 0 0.1em;
-  }
-
-  .hero-meta {
+  .cover-meta {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 32px;
-    margin-top: 48px;
-    padding-top: 32px;
-    border-top: 1px dashed var(--line);
+    max-width: 600px;
+    margin: 0 auto;
+    padding-top: 40px;
+    border-top: 1px solid var(--rule);
   }
 
-  .meta-item {
-    font-family: 'JetBrains Mono', monospace;
+  .cover-meta-item {
+    font-family: 'IBM Plex Mono', monospace;
   }
 
-  .meta-label {
+  .cover-meta-label {
     font-size: 10px;
     letter-spacing: 0.2em;
-    color: var(--text-faint);
+    color: var(--ink-faint);
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
-  .meta-value {
-    font-size: 18px;
-    color: var(--text);
+  .cover-meta-value {
+    font-size: 13px;
+    color: var(--ink);
     font-weight: 500;
   }
 
-  .meta-value.hi { color: var(--accent); }
-
-  /* ========== SECTIONS ========== */
-  section {
-    padding: 80px 0;
-    border-bottom: 1px solid var(--line);
-    position: relative;
+  /* ========== TOC ========== */
+  .toc {
+    padding: 80px 40px;
+    border-bottom: 1px solid var(--rule);
   }
 
-  .section-header {
+  .toc-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    font-style: italic;
+    color: var(--ink-faint);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+
+  .toc-list {
+    list-style: none;
+    counter-reset: toc;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .toc-item {
+    counter-increment: toc;
     display: flex;
     align-items: baseline;
-    gap: 20px;
-    margin-bottom: 48px;
-    flex-wrap: wrap;
+    padding: 14px 0;
+    border-bottom: 1px dotted var(--rule);
+    font-family: 'Noto Serif TC', serif;
   }
 
-  .section-number {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
+  .toc-item::before {
+    content: counter(toc, upper-roman);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
     color: var(--accent);
-    letter-spacing: 0.1em;
+    font-weight: 600;
+    width: 50px;
+    font-size: 18px;
+  }
+
+  .toc-item a {
+    color: var(--ink);
+    text-decoration: none;
+    flex: 1;
+    font-size: 15px;
+    transition: color 0.2s;
+  }
+
+  .toc-item a:hover { color: var(--accent); }
+
+  .toc-item .dots {
+    flex: 1;
+    border-bottom: 1px dotted var(--rule);
+    margin: 0 12px;
+    transform: translateY(-4px);
+  }
+
+  .toc-item .page-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+
+  /* ========== SECTION ========== */
+  section {
+    padding: 80px 60px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .section-kicker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .section-kicker::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
   }
 
   h2 {
     font-family: 'Noto Serif TC', serif;
+    font-size: 32px;
     font-weight: 900;
-    font-size: clamp(28px, 3.5vw, 44px);
-    line-height: 1.2;
+    line-height: 1.25;
     letter-spacing: -0.01em;
-    flex: 1;
-    min-width: 300px;
+    margin-bottom: 16px;
+    color: var(--ink);
   }
 
-  .section-sub {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--text-faint);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+  h2 .chapter-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 600;
+    margin-right: 16px;
+  }
+
+  .section-lead {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-style: italic;
+    color: var(--ink-dim);
+    line-height: 1.6;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--rule-soft);
   }
 
   h3 {
     font-family: 'Noto Serif TC', serif;
-    font-weight: 600;
     font-size: 22px;
-    margin-bottom: 20px;
+    font-weight: 700;
+    margin-top: 40px;
+    margin-bottom: 16px;
+    color: var(--ink);
     letter-spacing: -0.005em;
   }
 
-  p { margin-bottom: 16px; color: var(--text-dim); }
-  p strong { color: var(--text); font-weight: 500; }
-
-  /* ========== OVERVIEW GRID ========== */
-  .overview-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-  }
-
-  .coin-card {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    padding: 40px 36px;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.3s ease, border-color 0.3s ease;
-  }
-
-  .coin-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--accent);
-  }
-
-  .coin-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: var(--accent);
-  }
-
-  .coin-card.usdt::before { background: var(--usdt); }
-  .coin-card.usdc::before { background: var(--usdc); }
-
-  .coin-badge {
-    display: inline-block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    padding: 4px 10px;
-    border-radius: 2px;
-    margin-bottom: 16px;
-  }
-
-  .usdt .coin-badge { background: rgba(80, 175, 149, 0.15); color: var(--usdt); }
-  .usdc .coin-badge { background: rgba(39, 117, 202, 0.15); color: #4a8fd8; }
-
-  .coin-name {
-    font-family: 'Noto Serif TC', serif;
-    font-size: 36px;
-    font-weight: 900;
-    margin-bottom: 4px;
-  }
-
-  .coin-issuer {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--text-faint);
-    margin-bottom: 32px;
-  }
-
-  .stat-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 14px 0;
-    border-bottom: 1px dashed var(--line);
-    align-items: baseline;
-  }
-
-  .stat-row:last-child { border-bottom: none; }
-
-  .stat-label {
-    color: var(--text-dim);
-    font-size: 14px;
-  }
-
-  .stat-value {
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--text);
+  h3 .num {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--gold);
+    margin-right: 10px;
     font-weight: 500;
   }
 
-  .stat-value.big {
-    font-size: 28px;
-    color: var(--accent);
+  h4 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 10px;
+    color: var(--ink-2);
   }
 
-  /* ========== TABLES ========== */
+  p {
+    margin-bottom: 16px;
+    color: var(--ink-2);
+    font-size: 15.5px;
+    text-align: justify;
+  }
+
+  p strong { color: var(--ink); font-weight: 600; }
+
+  /* Drop cap */
+  .dropcap::first-letter {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 60px;
+    line-height: 0.9;
+    float: left;
+    margin: 6px 10px 0 0;
+    color: var(--accent);
+    font-weight: 600;
+    font-style: italic;
+  }
+
+  /* ========== PULL QUOTE ========== */
+  .pullquote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--ink);
+    border-left: 3px solid var(--accent);
+    padding: 16px 24px;
+    margin: 32px 0;
+    background: var(--bg-cream);
+  }
+
+  .pullquote::before {
+    content: '"';
+    font-size: 60px;
+    line-height: 0.3;
+    color: var(--accent);
+    margin-right: 4px;
+    vertical-align: -0.3em;
+  }
+
+  /* ========== STATS ========== */
+  .stat-block {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 24px;
+    margin: 32px 0;
+    padding: 32px;
+    background: var(--bg-cream);
+    border: 1px solid var(--rule);
+  }
+
+  .stat {
+    text-align: left;
+    border-left: 2px solid var(--accent);
+    padding-left: 16px;
+  }
+
+  .stat-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 38px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    line-height: 1.4;
+  }
+
+  /* ========== TABLE ========== */
   .table-wrap {
-    background: var(--panel);
-    border: 1px solid var(--line);
+    margin: 32px 0;
     overflow-x: auto;
-    margin-bottom: 24px;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'IBM Plex Sans', sans-serif;
     font-size: 13px;
-    min-width: 700px;
+    border-top: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
   }
 
-  thead {
-    background: var(--panel-2);
-    border-bottom: 2px solid var(--accent);
-  }
+  thead { border-bottom: 1px solid var(--ink); }
 
   th {
     text-align: left;
-    padding: 16px 20px;
-    font-weight: 500;
+    padding: 14px 12px;
+    font-weight: 600;
     font-size: 11px;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--accent);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
   }
 
   td {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--line);
-    color: var(--text-dim);
-    vertical-align: middle;
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--rule-soft);
+    color: var(--ink-2);
+    vertical-align: top;
   }
 
-  tbody tr { transition: background 0.2s ease; }
-  tbody tr:hover { background: rgba(0, 255, 157, 0.03); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--bg-cream); }
 
-  td.chain {
-    color: var(--text);
-    font-weight: 500;
+  td.highlight { color: var(--accent); font-weight: 600; }
+  td.dim { color: var(--ink-faint); }
+
+  .table-caption {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 12px;
+  }
+
+  .table-source {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 8px;
+  }
+
+  /* ========== CALLOUT ========== */
+  .callout {
+    background: var(--bg-cream);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    padding: 24px 28px;
+    margin: 24px 0;
+  }
+
+  .callout-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .callout-title {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    font-size: 17px;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+
+  .callout p {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ========== CARDS / GRID ========== */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 32px 0;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 32px 0;
+  }
+
+  .mini-card {
+    padding: 24px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
     position: relative;
-    padding-left: 32px;
   }
 
-  td.chain::before {
+  .mini-card-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .mini-card-title {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+
+  .mini-card p {
+    font-size: 13px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ========== LISTS ========== */
+  ul.custom-list {
+    list-style: none;
+    margin: 16px 0;
+    padding: 0;
+  }
+
+  ul.custom-list li {
+    padding: 8px 0 8px 24px;
+    position: relative;
+    color: var(--ink-2);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  ul.custom-list li::before {
+    content: '§';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    color: var(--accent);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 600;
+  }
+
+  ol.custom-numbered {
+    list-style: none;
+    counter-reset: cnum;
+    margin: 16px 0;
+    padding: 0;
+  }
+
+  ol.custom-numbered li {
+    counter-increment: cnum;
+    padding: 12px 0 12px 48px;
+    position: relative;
+    color: var(--ink-2);
+    font-size: 15px;
+    line-height: 1.7;
+    border-bottom: 1px dotted var(--rule-soft);
+  }
+
+  ol.custom-numbered li:last-child { border-bottom: none; }
+
+  ol.custom-numbered li::before {
+    content: counter(cnum, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 14px;
+    color: var(--accent);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  /* ========== INLINE ELEMENTS ========== */
+  .mark {
+    background: var(--highlight);
+    padding: 1px 4px;
+    color: var(--ink);
+  }
+
+  .num-inline {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.95em;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9em;
+    background: var(--bg-cream);
+    padding: 2px 6px;
+    color: var(--accent);
+    border: 1px solid var(--rule);
+  }
+
+  /* ========== STRATEGIC BOX ========== */
+  .strategy-box {
+    padding: 32px;
+    margin: 32px 0;
+    background: linear-gradient(180deg, var(--bg-cream) 0%, var(--paper) 100%);
+    border: 1px solid var(--rule);
+    position: relative;
+  }
+
+  .strategy-box::before {
     content: '';
     position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 6px;
-    height: 6px;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border: 1px solid var(--rule-soft);
+    pointer-events: none;
+  }
+
+  .strategy-box-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .strategy-box h4 {
+    margin-top: 0;
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  /* ========== TIMELINE ========== */
+  .timeline {
+    margin: 32px 0;
+    padding-left: 32px;
+    border-left: 2px solid var(--rule);
+    position: relative;
+  }
+
+  .timeline-item {
+    position: relative;
+    padding: 20px 0 20px 24px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -41px;
+    top: 28px;
+    width: 12px;
+    height: 12px;
     background: var(--accent);
+    border: 3px solid var(--paper);
     border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--accent);
   }
 
-  td.high { color: var(--accent); font-weight: 500; }
-  td.mid { color: var(--warn); }
-  td.low { color: var(--danger); font-weight: 500; }
-  td.retired { color: var(--text-faint); text-decoration: line-through; }
-
-  .fee-bar {
-    display: inline-block;
-    height: 4px;
-    background: var(--accent);
-    border-radius: 2px;
-    vertical-align: middle;
-    margin-left: 8px;
-    opacity: 0.4;
-  }
-
-  /* ========== WHY SECTION ========== */
-  .why-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
-  }
-
-  .why-card {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    padding: 32px 28px;
-    position: relative;
-  }
-
-  .why-card .num {
-    font-family: 'JetBrains Mono', monospace;
+  .timeline-date {
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
+    letter-spacing: 0.15em;
     color: var(--accent);
-    letter-spacing: 0.2em;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
   }
 
-  .why-card h4 {
+  .timeline-title {
     font-family: 'Noto Serif TC', serif;
-    font-size: 18px;
     font-weight: 600;
-    margin-bottom: 14px;
+    font-size: 16px;
+    margin-bottom: 6px;
   }
 
-  .why-card p {
-    font-size: 13px;
-    color: var(--text-dim);
-    line-height: 1.7;
+  .timeline-item p {
+    font-size: 14px;
+    margin: 0;
   }
 
-  .why-card code {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    background: var(--bg-2);
-    padding: 2px 8px;
-    border-radius: 2px;
-    color: var(--accent);
-  }
-
-  /* ========== SCENARIO ========== */
-  .scenario-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-  }
-
-  .scenario {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    padding: 24px 28px;
-    border-left: 3px solid var(--accent);
-  }
-
-  .scenario.warn { border-left-color: var(--danger); }
-
-  .scenario-title {
-    font-size: 13px;
-    color: var(--text-dim);
-    margin-bottom: 8px;
-  }
-
-  .scenario-chain {
-    font-family: 'Noto Serif TC', serif;
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 12px;
-  }
-
-  .scenario-fee {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 24px;
-    color: var(--accent);
-    font-weight: 500;
-  }
-
-  .scenario.warn .scenario-fee { color: var(--danger); }
-
-  .scenario-note {
-    font-size: 12px;
-    color: var(--text-faint);
-    margin-top: 8px;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  /* ========== INSIGHTS ========== */
-  .insight {
-    background: linear-gradient(135deg, var(--panel) 0%, var(--panel-2) 100%);
-    border: 1px solid var(--line);
-    padding: 36px 40px;
-    margin-bottom: 20px;
-    position: relative;
+  /* ========== FEE MODEL ========== */
+  .fee-model {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    margin: 32px 0;
+    padding: 0;
     overflow: hidden;
   }
 
-  .insight-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    color: var(--accent);
-    margin-bottom: 16px;
-  }
-
-  .insight h3 {
-    font-size: 24px;
-    margin-bottom: 16px;
-  }
-
-  .insight p {
-    color: var(--text-dim);
-    max-width: 800px;
-  }
-
-  .highlight {
-    background: rgba(0, 255, 157, 0.1);
-    color: var(--accent);
-    padding: 2px 6px;
-    border-radius: 2px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9em;
-  }
-
-  /* ========== RESERVE LIST ========== */
-  .reserve-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-    margin-top: 24px;
-  }
-
-  .reserve-item {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    padding: 20px 24px;
+  .fee-model-header {
+    background: var(--ink);
+    color: var(--bg-cream);
+    padding: 20px 32px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: baseline;
   }
 
-  .reserve-chain {
-    font-family: 'JetBrains Mono', monospace;
+  .fee-model-header h4 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--bg-cream);
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+  }
+
+  .fee-model-header .tier {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+  }
+
+  .fee-model-body {
+    padding: 28px 32px;
+  }
+
+  .fee-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px dotted var(--rule);
+    align-items: baseline;
+  }
+
+  .fee-row:last-child { border-bottom: none; }
+
+  .fee-label {
     font-size: 14px;
-    color: var(--text);
-    font-weight: 500;
+    color: var(--ink-2);
   }
 
-  .reserve-amount {
-    font-family: 'JetBrains Mono', monospace;
+  .fee-value {
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 14px;
     color: var(--accent);
+    font-weight: 600;
+    text-align: right;
   }
 
-  /* ========== STRATEGY ========== */
-  .strategy-table {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    overflow-x: auto;
-  }
-
-  .strategy-table table { min-width: 600px; }
-
-  .strategy-role {
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  .strategy-rec {
-    color: var(--accent);
-  }
-
-  /* ========== FOOTER ========== */
+  /* ========== APPENDIX ========== */
   footer {
-    padding: 60px 0 40px;
-    text-align: center;
-    border-top: 1px solid var(--line);
+    padding: 80px 60px 60px;
+    background: var(--bg-cream);
+    border-top: 3px double var(--ink);
   }
 
-  .disclaimer {
-    max-width: 700px;
-    margin: 0 auto 40px;
+  .footer-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .disclaimer-box {
+    background: var(--paper);
+    border: 1px solid var(--rule);
     padding: 24px 28px;
-    background: rgba(255, 203, 74, 0.05);
-    border: 1px solid rgba(255, 203, 74, 0.2);
+    margin-bottom: 32px;
     font-size: 13px;
-    color: var(--text-dim);
-    text-align: left;
+    color: var(--ink-dim);
     line-height: 1.7;
   }
 
-  .disclaimer strong {
-    color: var(--warn);
-    font-family: 'JetBrains Mono', monospace;
+  .disclaimer-box strong {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
     letter-spacing: 0.2em;
-    display: block;
+    color: var(--accent);
     margin-bottom: 8px;
   }
 
-  .footer-mark {
-    font-family: 'JetBrains Mono', monospace;
+  .sources {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
-    color: var(--text-faint);
-    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    line-height: 1.8;
   }
 
-  .footer-mark .bar {
-    display: inline-block;
-    width: 40px;
-    height: 1px;
-    background: var(--text-faint);
-    vertical-align: middle;
+  .sources h5 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+
+  .end-mark {
+    text-align: center;
+    margin-top: 40px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--ink-faint);
+    letter-spacing: 0.2em;
+    font-size: 13px;
+  }
+
+  .end-mark::before, .end-mark::after {
+    content: '—';
     margin: 0 12px;
   }
 
   /* ========== RESPONSIVE ========== */
-  @media (max-width: 768px) {
-    .container { padding: 0 20px; }
-    .hero { padding: 60px 20px 40px; }
-    .overview-grid { grid-template-columns: 1fr; }
-    section { padding: 60px 0; }
-    h1 { font-size: 38px; }
-    .coin-card { padding: 28px 24px; }
-    .insight { padding: 24px 24px; }
+  @media (max-width: 720px) {
+    .page { padding: 0 20px; }
+    .cover { padding: 80px 20px 60px; }
+    h1.cover-title { font-size: 28px; }
+    section { padding: 60px 24px; }
+    h2 { font-size: 26px; }
+    .cover-meta { grid-template-columns: 1fr; gap: 16px; }
+    .grid-2 { grid-template-columns: 1fr; }
+    footer { padding: 60px 24px 40px; }
   }
 
-  /* Fade-in animation */
-  section, .hero-inner > * {
-    animation: fadeUp 0.8s ease both;
-  }
-  section:nth-child(1) { animation-delay: 0.1s; }
-  section:nth-child(2) { animation-delay: 0.2s; }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  @media print {
+    body { background: white; }
+    .page { box-shadow: none; }
+    section { page-break-inside: avoid; }
   }
 </style>
 </head>
 <body>
 
-<!-- ==================== HERO ==================== -->
-<div class="hero">
-  <div class="hero-inner">
-    <div class="tag-line">
-      <span class="pulse"></span>
-      STABLECOIN INTELLIGENCE REPORT · 2026.04
+<div class="page">
+
+<!-- ============================================================ -->
+<!-- COVER                                                        -->
+<!-- ============================================================ -->
+<div class="cover">
+  <div class="cover-mark">STABLECOIN INTELLIGENCE · STRATEGIC REPORT</div>
+
+  <h1 class="cover-title">
+    穩定幣於全球法人交易間的規模<br>
+    及台灣銀行所能介入之<span class="em">商業模式</span>分析
+  </h1>
+
+  <div class="cover-subtitle">
+    From Global Volume Mapping to Taiwan Bank's Go-to-Market Playbook
+  </div>
+
+  <div class="cover-ornament"></div>
+
+  <p style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 17px; color: var(--ink-dim); max-width: 560px; margin: 0 auto; text-align: center;">
+    一份關於穩定幣市場規模、地理分布、幣種分化、鏈上基礎設施，<br>
+    以及台灣銀行業切入 B2B 收付款業務之產品規格與費率模型的結構性研究。
+  </p>
+
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">DATE</div>
+      <div class="cover-meta-value">April 2026</div>
     </div>
-
-    <h1>
-      穩定幣<span class="slash">/</span><span class="accent">鏈上分布</span>
-      <br>與<span class="accent">手續費</span>解構
-    </h1>
-
-    <p style="font-size: 18px; max-width: 680px; color: var(--text-dim); font-weight: 300;">
-      從 USDT 與 USDC 的鏈上資金流向，延伸到每條主力鏈的原生幣價格與實際轉帳成本，
-      一份寫給金融科技、支付與加密從業者的決策參考。
-    </p>
-
-    <div class="hero-meta">
-      <div class="meta-item">
-        <div class="meta-label">Total USDT Supply</div>
-        <div class="meta-value hi">~$190.8 B</div>
-      </div>
-      <div class="meta-item">
-        <div class="meta-label">Total USDC Supply</div>
-        <div class="meta-value hi">~$78.6 B</div>
-      </div>
-      <div class="meta-item">
-        <div class="meta-label">Blockchains Supported</div>
-        <div class="meta-value">USDT ~15 / USDC 32</div>
-      </div>
-      <div class="meta-item">
-        <div class="meta-label">Data As Of</div>
-        <div class="meta-value">2026 · 04 · 20</div>
-      </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">FOCUS</div>
+      <div class="cover-meta-value">B2B Cross-Border</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">AUDIENCE</div>
+      <div class="cover-meta-value">TW Bank Executives</div>
     </div>
   </div>
 </div>
 
-<!-- ==================== SECTION 01 OVERVIEW ==================== -->
-<section>
-  <div class="container">
-    <div class="section-header">
-      <span class="section-number">01 / 概況</span>
-      <h2>兩大穩定幣的版圖對照</h2>
-      <span class="section-sub">Market Overview</span>
+<!-- ============================================================ -->
+<!-- TABLE OF CONTENTS                                            -->
+<!-- ============================================================ -->
+<div class="toc">
+  <div class="toc-title">— Contents —</div>
+  <ol class="toc-list">
+    <li class="toc-item">
+      <a href="#s1">執行摘要　Executive Summary</a>
+      <span class="dots"></span>
+      <span class="page-num">I</span>
+    </li>
+    <li class="toc-item">
+      <a href="#s2">穩定幣全球規模與結構</a>
+      <span class="dots"></span>
+      <span class="page-num">II</span>
+    </li>
+    <li class="toc-item">
+      <a href="#s3">真實支付 vs. 帳面交易量：McKinsey 過濾法</a>
+      <span class="dots"></span>
+      <span class="page-num">III</span>
+    </li>
+    <li class="toc-item">
+      <a href="#s4">USDT 與 USDC 的分化戰略</a>
+      <span class="dots"></span>
+      <span class="page-num">IV</span>
+    </li>
+    <li class="toc-item">
+      <a href="#s5">鏈上基礎設施與手續費結構</a>
+      <span class="dots"></span>
+      <span class="page-num">V</span>
+    </li>
+    <li class="toc-item">
+      <a href="#s6">全球區域 B2B 使用情境</a>
+      <span class="dots"></span>
+      <span class="page-num">VI</span>
+    </li>
+    <li class="toc-item">
+      <a href="#s7">競爭格局：誰在搶食這塊市場</a>
+      <span class="dots"></span>
+      <span class="page-num">VII</span>
+    </li>
+    <li class="toc-item">
+      <a href="#s8">台灣的結構性優勢與監管窗口</a>
+      <span class="dots"></span>
+      <span class="page-num">VIII</span>
+    </li>
+    <li class="toc-item">
+      <a href="#s9">台灣銀行的切入商業模式</a>
+      <span class="dots"></span>
+      <span class="page-num">IX</span>
+    </li>
+    <li class="toc-item">
+      <a href="#s10">產品規格詳解</a>
+      <span class="dots"></span>
+      <span class="page-num">X</span>
+    </li>
+    <li class="toc-item">
+      <a href="#s11">費率模型與營收推估</a>
+      <span class="dots"></span>
+      <span class="page-num">XI</span>
+    </li>
+    <li class="toc-item">
+      <a href="#s12">執行路線圖與風險評估</a>
+      <span class="dots"></span>
+      <span class="page-num">XII</span>
+    </li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 1 EXECUTIVE SUMMARY                                  -->
+<!-- ============================================================ -->
+<section id="s1">
+  <div class="section-kicker">CHAPTER I · EXECUTIVE SUMMARY</div>
+  <h2><span class="chapter-num">I.</span>執行摘要</h2>
+  <div class="section-lead">
+    The stablecoin opportunity for Taiwan banks is real, measurable, and time-bounded.<br>
+    A strategic window opens in 2026, and narrows by 2028.
+  </div>
+
+  <p class="dropcap">
+    <strong>穩定幣已從加密貨幣的週邊工具，進化為全球 B2B 支付的新基礎設施。</strong>
+    2026 年，全球穩定幣年交易量已達 <span class="num-inline">$45 兆</span>、超越 Visa 的 <span class="num-inline">$14 兆</span>；但在剝除投機與內部轉移後，真實的支付金額約 <span class="num-inline">$390B</span>，其中 <span class="num-inline">60%</span> 屬於 B2B——這是個<strong>小但爆發性成長的市場（2024→2025 年增 733%）</strong>。
+  </p>
+
+  <p>
+    對台灣銀行而言，三個結構性訊號同時出現：<strong>（一）</strong>金管會已明確宣告《虛擬資產服務法》立法完成後，穩定幣將<strong>由金融機構優先發行</strong>，預計 2026 下半年上路；<strong>（二）</strong>台灣是出口導向、美元本位、跟美國深度鏈接的經濟體，是穩定幣的天然應用場景；<strong>（三）</strong>JPMorgan、Citi、HSBC 等國際銀行已全面啟動代幣化存款與穩定幣服務，時間窗口正在關閉。
+  </p>
+
+  <div class="stat-block">
+    <div class="stat">
+      <div class="stat-number">$226B</div>
+      <div class="stat-label">全球 B2B 穩定幣<br>年支付量 (2026)</div>
     </div>
-
-    <div class="overview-grid">
-      <div class="coin-card usdt">
-        <span class="coin-badge">USDT · TETHER</span>
-        <div class="coin-name">Tether</div>
-        <div class="coin-issuer">Issued by Tether Holdings</div>
-
-        <div class="stat-row">
-          <span class="stat-label">流通總量</span>
-          <span class="stat-value big">$190 B</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">主力鏈</span>
-          <span class="stat-value">Tron + Ethereum</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">支援鏈數</span>
-          <span class="stat-value">~15</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">策略定位</span>
-          <span class="stat-value">零售支付 · 新興市場</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Tron 支援</span>
-          <span class="stat-value" style="color: var(--accent);">✓ 最大市場</span>
-        </div>
-      </div>
-
-      <div class="coin-card usdc">
-        <span class="coin-badge">USDC · CIRCLE</span>
-        <div class="coin-name">USD Coin</div>
-        <div class="coin-issuer">Issued by Circle</div>
-
-        <div class="stat-row">
-          <span class="stat-label">流通總量</span>
-          <span class="stat-value big">$78.6 B</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">主力鏈</span>
-          <span class="stat-value">ETH · SOL · Base</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">支援鏈數</span>
-          <span class="stat-value">32 條</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">策略定位</span>
-          <span class="stat-value">機構 · 法遵 · B2B</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Tron 支援</span>
-          <span class="stat-value" style="color: var(--danger);">✗ 2024 已退出</span>
-        </div>
-      </div>
+    <div class="stat">
+      <div class="stat-number">733%</div>
+      <div class="stat-label">B2B 年成長率<br>(2024→2025)</div>
     </div>
-
-    <div style="margin-top: 40px; font-size: 14px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; padding: 20px 24px; border-left: 2px solid var(--accent); background: var(--panel);">
-      <strong style="color: var(--accent);">KEY INSIGHT &nbsp;→&nbsp;</strong>
-      2026 Q1，USDC 交易量達 $2.55 兆、USDT 為 $1.49 兆；USDC 在受監管 B2B 結算市場佔比已超過 80%。
-      USDT 仍在市值上領先，但 USDC 在機構場景快速拉近差距。
+    <div class="stat">
+      <div class="stat-number">$1.5T+</div>
+      <div class="stat-label">2030 年<br>預估市場規模</div>
     </div>
+    <div class="stat">
+      <div class="stat-number">H2 2026</div>
+      <div class="stat-label">台灣穩定幣<br>預估上路時點</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">⬥ KEY RECOMMENDATION</div>
+    <div class="callout-title">建議策略：「代收代付為先，代幣化存款為輔」</div>
+    <p>台灣銀行應以<strong>「企業 USDC/USDT 代收代付 + 自動結匯」</strong>為首波產品，利用現有外匯、出口押匯、OBU 業務基礎切入，6–12 個月內可落地。中期（2027 以後）再推出新台幣穩定幣（TWDC）或代幣化存款，深化貿易融資整合。費率建議採 <strong>0.15–0.50%</strong> 階梯訂價，相對於電匯 SWIFT 的 $25–50/筆 與 2–3 天時效，具備明確成本與速度優勢。</p>
   </div>
 </section>
 
-<!-- ==================== SECTION 02 USDT TABLE ==================== -->
-<section>
-  <div class="container">
-    <div class="section-header">
-      <span class="section-number">02 / USDT</span>
-      <h2>USDT × 鏈 × 手續費</h2>
-      <span class="section-sub">Tether Distribution</span>
+<!-- ============================================================ -->
+<!-- SECTION 2 GLOBAL SCALE                                       -->
+<!-- ============================================================ -->
+<section id="s2">
+  <div class="section-kicker">CHAPTER II · MARKET LANDSCAPE</div>
+  <h2><span class="chapter-num">II.</span>穩定幣全球規模與結構</h2>
+  <div class="section-lead">
+    從市值、交易量到活躍錢包——理解這個市場需要<br>同時看三組不同性質的指標。
+  </div>
+
+  <h3><span class="num">2.1</span>三層指標的真相</h3>
+
+  <p>
+    穩定幣市場經常被各方引用的數字大相逕庭，是因為三個指標代表不同的故事：
+  </p>
+
+  <div class="table-wrap">
+    <div class="table-caption">Table 2.1 — 穩定幣三大核心指標</div>
+    <table>
+      <thead>
+        <tr>
+          <th>指標</th>
+          <th>2026 最新數值</th>
+          <th>代表意義</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>流通市值（Stock）</strong></td>
+          <td class="highlight">$305–312B</td>
+          <td>存量——有多少錢停泊在穩定幣中</td>
+        </tr>
+        <tr>
+          <td><strong>年交易量（Gross Volume）</strong></td>
+          <td class="highlight">$45 兆</td>
+          <td>含投機、套利、DeFi、內部轉帳</td>
+        </tr>
+        <tr>
+          <td><strong>真實支付量（Payment Volume）</strong></td>
+          <td class="highlight">$390B</td>
+          <td>McKinsey 剔除雜訊後的真實經濟活動</td>
+        </tr>
+        <tr>
+          <td><strong>B2B 支付量</strong></td>
+          <td class="highlight">$226B</td>
+          <td>法人間流動——銀行最關注的池子</td>
+        </tr>
+        <tr>
+          <td>活躍錢包</td>
+          <td>3,000 萬+</td>
+          <td>使用者基礎（年增 53%）</td>
+        </tr>
+        <tr>
+          <td>年週轉率（Velocity）</td>
+          <td>約 110 倍</td>
+          <td>平均每枚穩定幣每 3.3 天換手一次</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-source">Sources: McKinsey × Artemis Analytics (2026), Binance Research, AlphaPoint</div>
+  </div>
+
+  <div class="pullquote">
+    看到「穩定幣年交易 $45 兆，超越 Visa」的標題請格外警惕。其中 <strong>99% 是投機與自動化活動</strong>，真實的支付用途僅佔約 <strong>0.87%</strong>。這是銀行業評估市場時最常踩的陷阱。
+  </div>
+
+  <h3><span class="num">2.2</span>市場結構：雙寡頭主導</h3>
+
+  <p>
+    穩定幣市場是典型的「贏家全拿」結構，兩大發行商合計佔約 <strong>88% 市佔</strong>：
+  </p>
+
+  <div class="grid-2">
+    <div class="mini-card" style="border-left: 4px solid #50af95;">
+      <div class="mini-card-label">USDT · TETHER</div>
+      <div class="mini-card-title">$187B · 66% 市佔</div>
+      <p>
+        市值王。新興市場零售、跨境匯款、灰色貿易的主力。使用範圍最廣但合規爭議多。年週轉率較低（價值儲存為主），但絕對交易量大。
+      </p>
+    </div>
+    <div class="mini-card" style="border-left: 4px solid #2775ca;">
+      <div class="mini-card-label">USDC · CIRCLE</div>
+      <div class="mini-card-title">$78B · 23% 市佔</div>
+      <p>
+        交易量王。2025 年交易額 $18.3 兆，反超 USDT 的 $13.3 兆。DeFi 頻繁週轉 + 機構青睞雙驅動。在受監管 B2B 結算市場佔 80%+ 。
+      </p>
+    </div>
+  </div>
+
+  <h3><span class="num">2.3</span>成長曲線</h3>
+
+  <p>
+    穩定幣市值從 2023 年初的 <span class="num-inline">$120B</span>、到 2025 初的 <span class="num-inline">$205B</span>、再到 2025 底的 <span class="num-inline">$308B</span>，<strong>年增率約 50%</strong>。市場預測機構對 2030 年的估值範圍很大：
+  </p>
+
+  <ul class="custom-list">
+    <li><strong>Citi 基本情境</strong>：$1.9 兆（激進情境 $4 兆）</li>
+    <li><strong>美國財政部長 Bessent</strong>：$3 兆</li>
+    <li><strong>金融機構平均估值</strong>：$2–4 兆</li>
+    <li><strong>Binance Research</strong>：$1.9 兆（2030），CAGR 約 58%</li>
+  </ul>
+
+  <p>
+    無論採哪個情境，<strong>未來 5 年市場至少放大 6–12 倍</strong>。這是台灣銀行必須動作的宏觀背景。
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 3 MCKINSEY FILTER                                    -->
+<!-- ============================================================ -->
+<section id="s3">
+  <div class="section-kicker">CHAPTER III · METHODOLOGY</div>
+  <h2><span class="chapter-num">III.</span>真實支付 vs. 帳面交易量</h2>
+  <div class="section-lead">
+    The McKinsey Filter — 如何從 $45 兆的噪音中<br>篩出 $226B 的真實 B2B 支付訊號。
+  </div>
+
+  <p class="dropcap">
+    <strong>McKinsey 與鏈上分析公司 Artemis Analytics 在 2026 年 2 月發布的聯合研究</strong>，首次系統性地把穩定幣「支付用途」從「交易用途」中分離出來。這份研究是目前業界對 B2B 規模最權威的估計。
+  </p>
+
+  <h3><span class="num">3.1</span>過濾方法論</h3>
+
+  <p>
+    McKinsey 的過濾邏輯採三層篩選：
+  </p>
+
+  <ol class="custom-numbered">
+    <li><strong>標記已知實體</strong>：排除交易所、做市商、高頻交易、DeFi 協議、穩定幣發行商自身的地址活動</li>
+    <li><strong>金額區間過濾</strong>：B2B 支付的統計典型區間為 <span class="num-inline">$4,500–$600,000</span>，低於或高於此區間的交易另行分類</li>
+    <li><strong>行為模式識別</strong>：剔除高頻重複、循環、自動化的轉帳模式</li>
+  </ol>
+
+  <p>
+    經此過濾後得到的關鍵數字：
+  </p>
+
+  <div class="stat-block">
+    <div class="stat">
+      <div class="stat-number">$45T</div>
+      <div class="stat-label">毛交易量<br>Gross Volume</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">$390B</div>
+      <div class="stat-label">真實支付<br>Genuine Payments</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">$226B</div>
+      <div class="stat-label">B2B 支付<br>B2B Subset</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">0.87%</div>
+      <div class="stat-label">真實支付<br>佔毛交易比例</div>
+    </div>
+  </div>
+
+  <h3><span class="num">3.2</span>滲透率：機會的另一面</h3>
+
+  <p>
+    <strong>全球 B2B 支付總市場：約 $1.6 千兆（quadrillion）/年。</strong> 穩定幣的 $226B 僅佔 <span class="num-inline">0.01%</span>。這個數字雙向解讀：
+  </p>
+
+  <div class="grid-2">
+    <div class="callout">
+      <div class="callout-label">⬥ 悲觀視角</div>
+      <p>穩定幣在法人支付的滲透幾乎可以忽略。SWIFT、RTP 網絡、代幣化存款等替代方案都在快速演進，穩定幣未必是最終贏家。</p>
+    </div>
+    <div class="callout">
+      <div class="callout-label">⬥ 樂觀視角</div>
+      <p>從 0.01% 到 1% 就是 100 倍成長空間。滲透到 5% 就是 <strong>$80 兆/年</strong> 的流量——相當於挑戰整個 SWIFT 網絡的地位。</p>
+    </div>
+  </div>
+
+  <h3><span class="num">3.3</span>台灣決策者應採用哪組數字？</h3>
+
+  <p>
+    對台灣銀行而言，評估市場規模時應<strong>以真實支付（$390B）為基線、B2B（$226B）為目標池</strong>，而非被 $45 兆的毛交易量誤導。但同時要注意：<strong>當穩定幣用途從投機轉向支付時，週轉率（velocity）會提升，市值不需要線性增長就能支撐更大的支付量</strong>——這是 JPMorgan 分析師的關鍵觀察。
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 4 USDT VS USDC                                       -->
+<!-- ============================================================ -->
+<section id="s4">
+  <div class="section-kicker">CHAPTER IV · THE GREAT DIVERGENCE</div>
+  <h2><span class="chapter-num">IV.</span>USDT 與 USDC 的分化戰略</h2>
+  <div class="section-lead">
+    兩大穩定幣並非同類產品。它們服務不同市場、<br>承擔不同風險、銀行應有不同策略。
+  </div>
+
+  <h3><span class="num">4.1</span>本質差異：一張表看懂</h3>
+
+  <div class="table-wrap">
+    <div class="table-caption">Table 4.1 — USDT vs. USDC 策略對照</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 28%;">面向</th>
+          <th style="width: 36%;">USDT · Tether</th>
+          <th style="width: 36%;">USDC · Circle</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>發行商</strong></td>
+          <td>Tether Holdings（註冊於薩爾瓦多）</td>
+          <td>Circle（美國 Nasdaq 上市，2025/6 IPO）</td>
+        </tr>
+        <tr>
+          <td><strong>市值</strong></td>
+          <td class="highlight">$187B（66%）</td>
+          <td class="highlight">$78B（23%）</td>
+        </tr>
+        <tr>
+          <td><strong>年交易量</strong></td>
+          <td>$13.3 兆</td>
+          <td class="highlight">$18.3 兆（反超）</td>
+        </tr>
+        <tr>
+          <td><strong>儲備審計</strong></td>
+          <td>BDO 季度證明（非完整審計）</td>
+          <td>Deloitte 月度證明</td>
+        </tr>
+        <tr>
+          <td><strong>合規態度</strong></td>
+          <td>選擇性配合執法</td>
+          <td>主動配合、預防性凍結</td>
+        </tr>
+        <tr>
+          <td><strong>支援鏈</strong></td>
+          <td>Tron + Ethereum 為主，共 ~15 條</td>
+          <td>32 條，多鏈均衡</td>
+        </tr>
+        <tr>
+          <td><strong>地理重心</strong></td>
+          <td>東南亞、非洲、中東、拉美、中國灰色</td>
+          <td>美國、歐洲、日韓、機構市場</td>
+        </tr>
+        <tr>
+          <td><strong>監管地位</strong></td>
+          <td>歐盟 MiCA 下限制使用<br>美國 GENIUS 法案下需重構</td>
+          <td>紐約 BitLicense<br>美 OCC 信託銀行牌照（2025）</td>
+        </tr>
+        <tr>
+          <td><strong>適合法人場景</strong></td>
+          <td>收新興市場客戶的美元貨款</td>
+          <td>機構結算、歐美企業支付</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span class="num">4.2</span>為何 USDC 交易量反超 USDT？</h3>
+
+  <p>
+    這個現象解讀很重要——<strong>不是市場偏好切換，而是使用方式不同</strong>。USDC 在 DeFi 協議中被反覆進出倉位，同一枚 USDC 一年可能流轉數百次；USDT 則多被持有作為儲值與跨境支付媒介，週轉率較低。
+  </p>
+
+  <p>
+    <strong>對台灣銀行的意涵</strong>：要做 B2B 支付不能只看交易量，要看「<strong>真實的企業對企業流動</strong>」。在這個指標上，USDC 的滲透率確實正在超車 USDT，尤其在歐美機構客戶。
+  </p>
+
+  <h3><span class="num">4.3</span>為什麼 USDC 離開了 Tron</h3>
+
+  <p>
+    Circle 在 2024/2 宣布停止在 Tron 發行 USDC。表面理由是「風險管理審查」，實際是五個深層考量的結果：
+  </p>
+
+  <ol class="custom-numbered">
+    <li><strong>Tron 的非法交易聲譽</strong>：Chainalysis 報告指出 2023 年逾 45% 的非法加密交易發生在 Tron 上，包含 Hamas、北韓 Lazarus Group 等被制裁實體大量使用。</li>
+    <li><strong>孫宇晨的 SEC 訴訟</strong>：2023 年 3 月 SEC 起訴孫宇晨操縱代幣市場、未註冊證券發行。Circle 身為準備上市公司無法承受聲譽風險。</li>
+    <li><strong>哲學衝突</strong>：USDC 賣點是「受監管、透明」，Tron 生態文化是「低摩擦、匿名」，兩者根本上相悖。</li>
+    <li><strong>流通量不成比例</strong>：USDC on Tron 僅 $340M，vs USDT on Tron 的 $85B，市場已被 USDT 壟斷。</li>
+    <li><strong>策略聚焦</strong>：Circle 把資源轉向 Solana、Base、CCTP 跨鏈協議，這是更符合其定位的戰場。</li>
+  </ol>
+
+  <div class="callout">
+    <div class="callout-label">⬥ 對台灣銀行的啟示</div>
+    <p>銀行若選擇與穩定幣合作或發行，必須考慮與哪個生態的風險綁定。<strong>選 USDC 不必然正確，但失誤成本較低；選 USDT 市場更大，但合規風險明顯較高</strong>。最佳策略是<strong>雙幣支援，但以 USDC 為合規主軸</strong>。</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 5 CHAIN INFRA                                        -->
+<!-- ============================================================ -->
+<section id="s5">
+  <div class="section-kicker">CHAPTER V · CHAIN INFRASTRUCTURE</div>
+  <h2><span class="chapter-num">V.</span>鏈上基礎設施與手續費結構</h2>
+  <div class="section-lead">
+    銀行要提供穩定幣服務，必須理解哪些鏈承載了主要流量、<br>成本結構如何、技術整合的難度在哪裡。
+  </div>
+
+  <h3><span class="num">5.1</span>USDT 鏈上分布</h3>
+
+  <div class="table-wrap">
+    <div class="table-caption">Table 5.1 — USDT 各鏈承載量與手續費</div>
+    <table>
+      <thead>
+        <tr>
+          <th>鏈</th>
+          <th>USDT 供應</th>
+          <th>原生幣 / 幣價</th>
+          <th>單筆手續費</th>
+          <th>適用場景</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Tron</strong></td>
+          <td class="highlight">$85B（45%）</td>
+          <td>TRX / $0.33</td>
+          <td>$1.88–$3.97</td>
+          <td>新興市場零售</td>
+        </tr>
+        <tr>
+          <td><strong>Ethereum</strong></td>
+          <td class="highlight">$77B（40%）</td>
+          <td>ETH / $2,400</td>
+          <td>$0.5–$7</td>
+          <td>機構大額</td>
+        </tr>
+        <tr>
+          <td>Solana</td>
+          <td>中等</td>
+          <td>SOL / $85–125</td>
+          <td>~$0.02</td>
+          <td>高頻支付</td>
+        </tr>
+        <tr>
+          <td>BNB Chain</td>
+          <td>中等</td>
+          <td>BNB / $620–855</td>
+          <td>~$0.03</td>
+          <td>CEX 進出金</td>
+        </tr>
+        <tr>
+          <td>Polygon / TON / Aptos</td>
+          <td>小</td>
+          <td>各異</td>
+          <td>$0.0001–0.001</td>
+          <td>小額 / 新興</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span class="num">5.2</span>USDC 鏈上分布</h3>
+
+  <div class="table-wrap">
+    <div class="table-caption">Table 5.2 — USDC 各鏈地位與手續費</div>
+    <table>
+      <thead>
+        <tr>
+          <th>鏈</th>
+          <th>USDC 地位</th>
+          <th>手續費</th>
+          <th>銀行整合難度</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Ethereum</strong></td>
+          <td class="highlight">最大宗</td>
+          <td>$0.5–$7</td>
+          <td>中（EVM 成熟，工具完整）</td>
+        </tr>
+        <tr>
+          <td><strong>Solana</strong></td>
+          <td class="highlight">第二大 · 成長最快</td>
+          <td>~$0.02</td>
+          <td>中高（需專用 SDK）</td>
+        </tr>
+        <tr>
+          <td>Base (L2)</td>
+          <td>重要</td>
+          <td>~$0.01–0.05</td>
+          <td>低（EVM + Coinbase 支援）</td>
+        </tr>
+        <tr>
+          <td>Arbitrum (L2)</td>
+          <td>重要</td>
+          <td>~$0.02–0.1</td>
+          <td>低（EVM）</td>
+        </tr>
+        <tr>
+          <td>Polygon / Avalanche</td>
+          <td>中</td>
+          <td>~$0.001–0.02</td>
+          <td>低</td>
+        </tr>
+        <tr>
+          <td class="dim">Tron</td>
+          <td class="dim">已退出（2024/2）</td>
+          <td class="dim">—</td>
+          <td class="dim">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span class="num">5.3</span>銀行應該支援哪幾條鏈？</h3>
+
+  <p>
+    全鏈支援成本過高、技術負擔重。建議台灣銀行採取<strong>「3+2 策略」</strong>：
+  </p>
+
+  <div class="grid-2">
+    <div class="strategy-box">
+      <div class="strategy-box-label">TIER 1 · 必備</div>
+      <h4>三條核心鏈</h4>
+      <ul class="custom-list">
+        <li><strong>Ethereum</strong>：機構客戶、大額 USDC</li>
+        <li><strong>Tron</strong>：新興市場客戶的 USDT 收款</li>
+        <li><strong>Solana</strong>：高頻、低成本 USDC</li>
+      </ul>
+    </div>
+    <div class="strategy-box">
+      <div class="strategy-box-label">TIER 2 · 加值</div>
+      <h4>兩條擴展鏈</h4>
+      <ul class="custom-list">
+        <li><strong>Base</strong>：Coinbase 生態，美國企業</li>
+        <li><strong>Arbitrum</strong>：DeFi 整合需求</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3><span class="num">5.4</span>Cross-Chain Transfer Protocol（CCTP）</h3>
+
+  <p>
+    Circle 自己的跨鏈協議 CCTP 是目前<strong>機構級跨鏈移動 USDC 的首選</strong>。它透過「原生銷毀—鑄造」模式避開第三方橋接的風險，已被 MetaMask、Stripe Bridge 等廣泛整合。台灣銀行若採用 USDC 為主軸，<strong>整合 CCTP 是必然選擇</strong>，可避免維護各鏈流動性池的複雜性。
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 6 REGIONAL B2B                                       -->
+<!-- ============================================================ -->
+<section id="s6">
+  <div class="section-kicker">CHAPTER VI · REGIONAL DYNAMICS</div>
+  <h2><span class="chapter-num">VI.</span>全球區域 B2B 使用情境</h2>
+  <div class="section-lead">
+    法人穩定幣流量在全球極不均衡——60% 由亞洲發起，<br>拉美非洲雖被神話但實際規模仍小。
+  </div>
+
+  <h3><span class="num">6.1</span>B2B 穩定幣流量的地理分布</h3>
+
+  <div class="table-wrap">
+    <div class="table-caption">Table 6.1 — 全球 B2B 穩定幣支付地理分布（2026）</div>
+    <table>
+      <thead>
+        <tr>
+          <th>區域</th>
+          <th>年 B2B 量</th>
+          <th>全球佔比</th>
+          <th>主要場景</th>
+          <th>主流幣種</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>亞洲</strong>（新港日為主）</td>
+          <td class="highlight">~$245B</td>
+          <td class="highlight">60%</td>
+          <td>進出口貿易、船運、供應鏈</td>
+          <td>USDT + USDC</td>
+        </tr>
+        <tr>
+          <td><strong>北美</strong></td>
+          <td>~$60–80B</td>
+          <td>20–25%</td>
+          <td>科技收款、跨境電商</td>
+          <td>USDC 主導</td>
+        </tr>
+        <tr>
+          <td><strong>歐洲</strong></td>
+          <td>~$30–40B</td>
+          <td>10–15%</td>
+          <td>MiCA 後合規支付</td>
+          <td>USDC + EURC</td>
+        </tr>
+        <tr>
+          <td>拉丁美洲</td>
+          <td>&lt;$1B</td>
+          <td>&lt;1%</td>
+          <td>高通膨對沖、薪資</td>
+          <td>USDT</td>
+        </tr>
+        <tr>
+          <td>非洲</td>
+          <td>&lt;$1B</td>
+          <td>&lt;1%</td>
+          <td>跨境貿易匯入</td>
+          <td>USDT</td>
+        </tr>
+        <tr>
+          <td>中東</td>
+          <td>小 · 成長中</td>
+          <td>&lt;2%</td>
+          <td>大宗商品、OTC</td>
+          <td>USDT</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-source">Sources: McKinsey / Artemis Analytics 2026, AlphaPoint, PYMNTS</div>
+  </div>
+
+  <div class="pullquote">
+    <strong>零售與 B2B 的地理分布完全相反。</strong>零售 USDT 集中在拉美非洲東南亞；但 B2B 流量壓倒性來自新加坡、香港、日本。這反映 B2B 需要成熟的金融基礎設施與清晰的監管，而不僅僅是「對美元的需求」。
+  </p>
+  </div>
+
+  <h3><span class="num">6.2</span>關鍵貿易廊道</h3>
+
+  <p>
+    業界共識的十大 B2B 穩定幣廊道：
+  </p>
+
+  <ol class="custom-numbered">
+    <li><strong>中國 → 非洲</strong>：最快成長（XTransfer 2025 非洲業務年增 270%）；中國製造業出口、USDT on Tron 主導</li>
+    <li><strong>中國 → 東南亞</strong>：供應鏈採購的穩定渠道</li>
+    <li><strong>新加坡 / 香港 → 全球</strong>：亞洲貿易結算樞紐、USDT 與 USDC 混用</li>
+    <li><strong>美國 → 拉美</strong>：Mizuho 報告顯示已佔美墨匯款廊道 5–10%，費率低於 1%</li>
+    <li><strong>台灣 → 東南亞</strong>：半導體供應鏈、電子製造</li>
+    <li><strong>台灣 → 美國</strong>：ODM/OEM 收款、SaaS 服務輸出</li>
+    <li><strong>歐洲 → 非洲</strong>：貿易、援助、僑匯混合</li>
+    <li><strong>俄羅斯 → 中國 / 中亞</strong>：制裁下的 SWIFT 替代</li>
+    <li><strong>中東 → 南亞</strong>：勞工匯款、能源貿易</li>
+    <li><strong>日韓 → 東南亞</strong>：消費品出口、投資匯出</li>
+  </ol>
+
+  <h3><span class="num">6.3</span>台灣在全球廊道中的位置</h3>
+
+  <p>
+    台灣是上述廊道中的<strong>第 5、第 6 兩條</strong>的核心參與者。2025 年台灣對美、對東南亞的貿易順差合計超過 <span class="num-inline">$1,500 億美元</span>，其中<strong>中小型出口商、ODM 代工廠、半導體供應鏈、電子零組件</strong>都是穩定幣收付款的潛在客群。
+  </p>
+
+  <p>
+    台灣特殊的結構性優勢：
+  </p>
+
+  <ul class="custom-list">
+    <li><strong>外匯存底 $6,000 億+</strong>，美元儲備充裕，提供穩定幣發行的儲備基礎</li>
+    <li><strong>出口導向、美元計價</strong>，企業對美元結算有真實需求</li>
+    <li><strong>與美國政治經濟鏈接深</strong>，採用 GENIUS Act 框架下的美元穩定幣具戰略合理性</li>
+    <li><strong>供應鏈中樞地位</strong>，可成為「亞洲美元穩定幣結算中心」</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 7 COMPETITIVE                                        -->
+<!-- ============================================================ -->
+<section id="s7">
+  <div class="section-kicker">CHAPTER VII · COMPETITIVE LANDSCAPE</div>
+  <h2><span class="chapter-num">VII.</span>競爭格局：誰在搶食這塊市場</h2>
+  <div class="section-lead">
+    台灣銀行不是在真空中操作。全球的銀行、<br>加密原生公司、支付巨頭已經下場兩年以上。
+  </div>
+
+  <h3><span class="num">7.1</span>競爭者四大陣營</h3>
+
+  <div class="grid-2">
+    <div class="mini-card">
+      <div class="mini-card-label">陣營 1 · 國際大型銀行</div>
+      <div class="mini-card-title">JPMorgan · Citi · HSBC · BNY</div>
+      <p>
+        走「代幣化存款（Deposit Token）」路線。以自家存款為基礎發行鏈上代幣，可付息、可整合信貸產品。<strong>JPM Coin 已在 Base 公鏈上線</strong>，支援美元，規劃擴展歐元、英鎊。
+      </p>
     </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>鏈</th>
-            <th>USDT 供應</th>
-            <th>原生幣</th>
-            <th>幣價 (USD)</th>
-            <th>單筆手續費</th>
-            <th>備註</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="chain">Tron (TRC-20)</td>
-            <td>~$85 B</td>
-            <td>TRX</td>
-            <td>~$0.33</td>
-            <td class="low">$1.88 – $3.97</td>
-            <td>轉新錢包需 13.4 TRX (~$4.4)</td>
-          </tr>
-          <tr>
-            <td class="chain">Ethereum (ERC-20)</td>
-            <td>~$77 B</td>
-            <td>ETH</td>
-            <td>~$2,400</td>
-            <td class="mid">$0.5 – $7</td>
-            <td>壅塞時可飆至 $30+</td>
-          </tr>
-          <tr>
-            <td class="chain">Solana (SPL)</td>
-            <td>中等</td>
-            <td>SOL</td>
-            <td>~$85 – 125</td>
-            <td class="high">~$0.019</td>
-            <td>首次收款 ~0.002 SOL 開戶</td>
-          </tr>
-          <tr>
-            <td class="chain">BNB Chain (BEP-20)</td>
-            <td>中等</td>
-            <td>BNB</td>
-            <td>~$620 – 855</td>
-            <td class="high">~$0.031</td>
-            <td>生態完整、CEX 親和</td>
-          </tr>
-          <tr>
-            <td class="chain">Polygon</td>
-            <td>較小</td>
-            <td>POL</td>
-            <td>~$0.20</td>
-            <td class="high">~$0.0014</td>
-            <td>費用幾乎可忽略</td>
-          </tr>
-          <tr>
-            <td class="chain">TON</td>
-            <td>小</td>
-            <td>TON</td>
-            <td>~$2 – 3</td>
-            <td class="high">~$0.0001</td>
-            <td>Telegram 生態整合</td>
-          </tr>
-          <tr>
-            <td class="chain">Aptos</td>
-            <td>小</td>
-            <td>APT</td>
-            <td>~$4 – 5</td>
-            <td class="high">~$0.0001</td>
-            <td>高效能新興鏈</td>
-          </tr>
-          <tr>
-            <td class="chain">Avalanche</td>
-            <td>小</td>
-            <td>AVAX</td>
-            <td>~$9 – 10</td>
-            <td class="high">~$0.019</td>
-            <td>EVM 相容 L1</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="mini-card">
+      <div class="mini-card-label">陣營 2 · 加密原生支付商</div>
+      <div class="mini-card-title">Circle · Stripe/Bridge · Fireblocks</div>
+      <p>
+        Circle 的 <strong>CPN（Circle Payments Network）</strong>已招募 55 家金融機構，74 家審核中。Stripe 收購 Bridge 後全力押注穩定幣支付。這群是銀行的直接競爭者。
+      </p>
     </div>
 
-    <p style="font-size: 13px; color: var(--text-faint); font-family: 'JetBrains Mono', monospace; margin-top: 16px;">
-      // Tron 承載約 42% USDT 流通量 · 過去 12 個月 USDT 轉帳量達 $7.9 兆 · 小額零售支付主場
+    <div class="mini-card">
+      <div class="mini-card-label">陣營 3 · 區域型 Fintech</div>
+      <div class="mini-card-title">XTransfer · Bitso · Yellow Card</div>
+      <p>
+        鎖定特定廊道。XTransfer 聚焦中非、中拉（2025 年非洲業務年增 270%）；Bitso Business 主導拉美；Yellow Card 覆蓋非洲 20+ 國。廊道深耕、合規在地化。
+      </p>
+    </div>
+
+    <div class="mini-card">
+      <div class="mini-card-label">陣營 4 · 支付與卡組織</div>
+      <div class="mini-card-title">Visa · Mastercard · PayPal</div>
+      <p>
+        Visa 已在 Ethereum、Solana 上線 USDC 結算。Mastercard 試點以 USDC 為主。PayPal 自發 PYUSD 但量小。這群不是對手，而是潛在整合夥伴。
+      </p>
+    </div>
+  </div>
+
+  <h3><span class="num">7.2</span>代幣化存款 vs. 公鏈穩定幣：銀行的兩條路</h3>
+
+  <p>
+    這是銀行界目前最大的戰略辯論——<strong>應該發行自家的代幣化存款（Deposit Token），還是使用/發行公鏈穩定幣？</strong>
+  </p>
+
+  <div class="table-wrap">
+    <div class="table-caption">Table 7.1 — 代幣化存款 vs. 公鏈穩定幣</div>
+    <table>
+      <thead>
+        <tr>
+          <th>面向</th>
+          <th>代幣化存款（JPM Coin 模式）</th>
+          <th>公鏈穩定幣（Circle 模式）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>法律性質</strong></td>
+          <td>銀行存款的數位化</td>
+          <td>電子貨幣 / 支付工具</td>
+        </tr>
+        <tr>
+          <td><strong>發行主體</strong></td>
+          <td>單一銀行</td>
+          <td>專業發行商</td>
+        </tr>
+        <tr>
+          <td><strong>可互通性</strong></td>
+          <td>初期封閉，僅限該行客戶</td>
+          <td>開放，全球可轉</td>
+        </tr>
+        <tr>
+          <td><strong>利息</strong></td>
+          <td>可支付利息</td>
+          <td>多數不可（GENIUS 禁止）</td>
+        </tr>
+        <tr>
+          <td><strong>存款保險</strong></td>
+          <td>受保（如 FDIC）</td>
+          <td>不受保</td>
+        </tr>
+        <tr>
+          <td><strong>速度</strong></td>
+          <td>近即時</td>
+          <td>鏈上確認時間</td>
+        </tr>
+        <tr>
+          <td><strong>合規</strong></td>
+          <td>傳統銀行監理</td>
+          <td>GENIUS / MiCA 專法</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">⬥ 對台灣的啟示</div>
+    <p>金管會已明確 <strong>「穩定幣首階段由金融機構優先發行」</strong>。這個政策方向意味著台灣走的是<strong>偏向代幣化存款的混合模式</strong>——類似 JPM Coin 但附有公共可轉讓性。台灣銀行應同時準備：（一）自營的台幣穩定幣/代幣化存款，（二）與 Circle/Tether 合作的美元穩定幣通路，兩條腿走路。</p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 8 TAIWAN REGULATORY                                  -->
+<!-- ============================================================ -->
+<section id="s8">
+  <div class="section-kicker">CHAPTER VIII · TAIWAN CONTEXT</div>
+  <h2><span class="chapter-num">VIII.</span>台灣的結構性優勢與監管窗口</h2>
+  <div class="section-lead">
+    2026 下半年，台灣將進入穩定幣法制化元年。<br>這是未來五年銀行最重要的戰略窗口。
+  </div>
+
+  <h3><span class="num">8.1</span>台灣立法時間表</h3>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-date">2025.06.27</div>
+      <div class="timeline-title">草案送行政院</div>
+      <p>金管會將《虛擬資產服務法》草案（含穩定幣章節）提報行政院，已完成三次跨部會會議。</p>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2025.12.03</div>
+      <div class="timeline-title">彭金隆立院備詢</div>
+      <p>金管會主委彭金隆明確宣告：「首階段發行主體以金融機構為先。」若本會期送進立院、下會期三讀通過，最快 2026/6–7 落地。</p>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2025.12.11</div>
+      <div class="timeline-title">監理方向釐清</div>
+      <p>金管會銀行局長童政彰表示，台灣監理框架以<strong>歐盟 MiCA 為主要參考</strong>，輔以日、新、英、港、美經驗。原則包含：等值兌付、足額準備金、資訊揭露、不得提供利息。</p>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2026 H2（預期）</div>
+      <div class="timeline-title">台版穩定幣上路</div>
+      <p>虛擬資產服務法通過 + 六個月子法緩衝期後，台灣首批法金融機構發行的穩定幣可望上市。</p>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2027–2028</div>
+      <div class="timeline-title">市場結構成形</div>
+      <p>預計 2–3 家大型銀行搶到首批牌照；其他銀行只能做通路或退出。市場結構進入「1–2 超大型 + 3–5 中型」的寡頭局面。</p>
+    </div>
+  </div>
+
+  <h3><span class="num">8.2</span>台灣的五大結構性優勢</h3>
+
+  <ol class="custom-numbered">
+    <li><strong>美元本位經濟</strong>：台灣出口占 GDP 約 70%，美元計價結算是企業財務核心。美元穩定幣天然契合。</li>
+    <li><strong>外匯存底充足</strong>：$6,000 億 + 美元儲備全球前 5，提供穩定幣發行的信用背書基礎。</li>
+    <li><strong>供應鏈樞紐地位</strong>：半導體、電子製造、ODM 讓台灣企業每天面對全球 B2B 收付需求。</li>
+    <li><strong>與美國監管路徑一致</strong>：台灣政經深度綁定美國，GENIUS 框架的美元穩定幣在台灣具戰略合理性，監理阻力較低。</li>
+    <li><strong>金融體系發達 + 客家幣經驗</strong>：央行已完成 CBDC 沙盒試驗（客家幣 2025），累積可程式化貨幣技術經驗，為新台幣穩定幣鋪路。</li>
+  </ol>
+
+  <h3><span class="num">8.3</span>台灣的三大結構性限制</h3>
+
+  <ul class="custom-list">
+    <li><strong>新台幣非國際結算貨幣</strong>：TWD 穩定幣在國際流通性天生有限，主戰場仍是 USDC/USDT 的代收代付。</li>
+    <li><strong>外匯管制</strong>：央行對外匯進出有額度管理，穩定幣業務需要與央行協調建立「合法導管」。</li>
+    <li><strong>地下 OTC 市場既存</strong>：台灣既有的加密 OTC 市場（XREX、MaxiCoin 等）已服務一部分出口商，銀行需要在合規性、便利性之間找到差異化。</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 9 BUSINESS MODELS                                    -->
+<!-- ============================================================ -->
+<section id="s9">
+  <div class="section-kicker">CHAPTER IX · BUSINESS MODELS</div>
+  <h2><span class="chapter-num">IX.</span>台灣銀行的切入商業模式</h2>
+  <div class="section-lead">
+    六種商業模式，從最輕量的通路整合到最重的<br>自有發行，銀行可依規模與風險偏好選擇。
+  </div>
+
+  <h3><span class="num">9.1</span>六種商業模式全景</h3>
+
+  <div class="table-wrap">
+    <div class="table-caption">Table 9.1 — 台灣銀行穩定幣業務的六種模式</div>
+    <table>
+      <thead>
+        <tr>
+          <th>模式</th>
+          <th>描述</th>
+          <th>技術負擔</th>
+          <th>牌照需求</th>
+          <th>營收池</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. 代收代付通路</strong></td>
+          <td>為企業收 USDC/USDT，自動結匯為 TWD/USD</td>
+          <td>低</td>
+          <td>現有</td>
+          <td>手續費</td>
+        </tr>
+        <tr>
+          <td><strong>2. 企業穩定幣錢包</strong></td>
+          <td>整合多鏈、多幣種的企業錢包服務</td>
+          <td>中</td>
+          <td>虛資法子法</td>
+          <td>訂閱+手續費</td>
+        </tr>
+        <tr>
+          <td><strong>3. 跨境支付軌道</strong></td>
+          <td>以穩定幣為 SWIFT 替代，直接連通海外夥伴</td>
+          <td>中高</td>
+          <td>現有+虛資</td>
+          <td>每筆固定費</td>
+        </tr>
+        <tr>
+          <td><strong>4. 貿易融資整合</strong></td>
+          <td>應收帳款融資、押匯、OA 收款自動化</td>
+          <td>高</td>
+          <td>現有</td>
+          <td>利差+手續</td>
+        </tr>
+        <tr>
+          <td><strong>5. 代幣化存款</strong></td>
+          <td>自發 TWD Deposit Token（類 JPM Coin）</td>
+          <td>很高</td>
+          <td>需新執照</td>
+          <td>存款利差</td>
+        </tr>
+        <tr>
+          <td><strong>6. 穩定幣託管清算</strong></td>
+          <td>為其他小型銀行/PSP 提供基礎設施</td>
+          <td>很高</td>
+          <td>信託+虛資</td>
+          <td>AUM % + 服務費</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span class="num">9.2</span>推薦的切入優先順序</h3>
+
+  <div class="strategy-box">
+    <div class="strategy-box-label">RECOMMENDED SEQUENCE</div>
+    <h4>階段化路線：由輕到重的 24 個月藍圖</h4>
+
+    <div class="timeline" style="margin-top: 24px;">
+      <div class="timeline-item">
+        <div class="timeline-date">階段 1 · 0–6 個月</div>
+        <div class="timeline-title">模式 1：代收代付通路（MVP）</div>
+        <p>為現有出口客戶提供「USDC/USDT 收款 → 自動結匯 TWD」。技術整合輕，可用第三方托管（如 Fireblocks、Bitgo）快速上線。目標：證明客戶需求、累積資料。</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">階段 2 · 6–12 個月</div>
+        <div class="timeline-title">模式 2+3：主動付款 + 企業錢包</div>
+        <p>擴展至主動跨境付款（TWD/USD → USDC → 海外收款人），整合多鏈企業錢包界面。目標：取代部分 SWIFT 電匯流量，建立黏性。</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">階段 3 · 12–18 個月</div>
+        <div class="timeline-title">模式 4：貿易融資深度整合</div>
+        <p>把穩定幣收付和應收帳款融資、出口押匯、OA 帳期融資結合。利用鏈上數據做即時風險定價。目標：從「手續費生意」升級為「利差生意」。</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">階段 4 · 18–24 個月</div>
+        <div class="timeline-title">模式 5+6：TWD 穩定幣 + 託管</div>
+        <p>待虛資法子法明朗後，推出自營的 TWD 代幣化存款，同時對中小型銀行/PSP 提供託管清算服務。建立生態系角色。</p>
+      </div>
+    </div>
+  </div>
+
+  <h3><span class="num">9.3</span>為什麼不從「自發穩定幣」開始？</h3>
+
+  <p>
+    很多銀行的直覺是「先搶發行執照」，這是錯誤策略。原因：
+  </p>
+
+  <ul class="custom-list">
+    <li><strong>真正的價值在通路，不在發行</strong>：Circle 有 USDC，但賺錢的是其網路效應與整合，不是鑄幣稅</li>
+    <li><strong>TWD 穩定幣的國際流動性有限</strong>：台灣本地結算需求有，但能否進入國際貿易仍是未知</li>
+    <li><strong>子法未明前發行風險高</strong>：金管會子法需 6 個月緩衝，先跑商業模式比先搶牌照更務實</li>
+    <li><strong>USDC/USDT 已經有網路效應</strong>：與其挑戰，不如當其最佳的本地對接點</li>
+  </ul>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 10 PRODUCT SPEC                                      -->
+<!-- ============================================================ -->
+<section id="s10">
+  <div class="section-kicker">CHAPTER X · PRODUCT SPECIFICATIONS</div>
+  <h2><span class="chapter-num">X.</span>產品規格詳解</h2>
+  <div class="section-lead">
+    聚焦階段 1–2 的兩個核心產品，<br>給出可直接進入專案規劃的規格描述。
+  </div>
+
+  <h3><span class="num">10.1</span>產品 A：企業穩定幣代收代付服務</h3>
+
+  <h4>目標客群</h4>
+  <ul class="custom-list">
+    <li>年營收 <span class="num-inline">NT$50M–5B</span> 的中小型出口商</li>
+    <li>電子商務賣家（透過 Amazon、Shopify、獨立站收款）</li>
+    <li>ODM/OEM 代工廠收美國品牌客戶尾款</li>
+    <li>SaaS / 數位服務業海外訂閱收入</li>
+    <li>跨境電商賣家收新興市場客戶款</li>
+  </ul>
+
+  <h4>功能規格</h4>
+  <ol class="custom-numbered">
+    <li><strong>多鏈收款地址自動生成</strong>：客戶登入網銀可為每筆交易/每個買家生成唯一的 ERC-20、Tron、Solana 收款地址（類似虛擬 IBAN 概念）</li>
+    <li><strong>即時對帳</strong>：鏈上交易確認後自動 match 到對應發票/訂單</li>
+    <li><strong>自動結匯</strong>：收到穩定幣後可選擇（a）保留 USDC/USDT、（b）即時結匯為 TWD 存入活存、（c）預設匯率條件觸發結匯</li>
+    <li><strong>KYT/AML 篩檢</strong>：每筆收款經 Chainalysis/Elliptic 比對黑名單，可疑款項自動退回/凍結</li>
+    <li><strong>API 整合</strong>：提供 RESTful API 給企業 ERP（SAP、Oracle、鼎新）直接對接</li>
+    <li><strong>多層審批流程</strong>：企業可設定出款審批層級、單日/單筆額度、白名單地址</li>
+    <li><strong>報表與稅務</strong>：自動產生符合稅務申報格式的月度報表（匯率、實現損益、金額換算）</li>
+  </ol>
+
+  <h4>技術架構</h4>
+
+  <div class="callout">
+    <div class="callout-label">⬥ TECHNICAL STACK</div>
+    <p>
+      <strong>托管層</strong>：採 Fireblocks / BitGo / Coinbase Prime 作為資產託管（MPC 多方計算架構）<br>
+      <strong>結匯層</strong>：與本地加密 OTC（如 XREX）或國際做市商簽約保證流動性<br>
+      <strong>合規層</strong>：Chainalysis KYT + 自家 AML 規則引擎<br>
+      <strong>整合層</strong>：銀行核心系統 + 網銀 + 企業 ERP API<br>
+      <strong>支援鏈</strong>：Ethereum、Tron、Solana（Tier 1）；Base、Arbitrum（Tier 2）<br>
+      <strong>支援幣</strong>：USDC（主推）、USDT（配套）
     </p>
   </div>
+
+  <h3><span class="num">10.2</span>產品 B：跨境支付軌道（SWIFT 替代）</h3>
+
+  <h4>目標客群</h4>
+  <ul class="custom-list">
+    <li>有頻繁海外採購/付款需求的進口商</li>
+    <li>跨國企業集團的內部資金調度</li>
+    <li>中小企業 B2B 付款（取代 SWIFT 電匯）</li>
+  </ul>
+
+  <h4>核心流程</h4>
+
+  <div class="strategy-box">
+    <div class="strategy-box-label">TRANSACTION FLOW</div>
+    <h4>付款者 → 收款者（跨境）</h4>
+
+    <ol class="custom-numbered">
+      <li>企業在網銀輸入：收款人資訊、金額（TWD 或 USD）、目的地國</li>
+      <li>系統報價：<strong>匯率 + 手續費 + 預計到達時間</strong>（通常 10–60 分鐘）</li>
+      <li>企業確認，TWD 從活存扣款 → 銀行做市桌轉為 USDC</li>
+      <li>USDC 經由最優鏈（通常是 Solana 或 Base）發送到對方銀行的穩定幣收款地址</li>
+      <li>對方銀行/機構收到 USDC → 結匯為當地法幣 → 存入收款人帳戶</li>
+      <li>兩端同時生成符合 SWIFT MT103 格式的對帳憑證</li>
+    </ol>
+  </div>
+
+  <h4>關鍵規格</h4>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>項目</th>
+          <th>SWIFT 傳統電匯</th>
+          <th>穩定幣軌道（本行）</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>時效</td><td>2–5 個工作日</td><td class="highlight">10–60 分鐘</td></tr>
+        <tr><td>手續費</td><td>$25–50/筆 + 中轉行費</td><td class="highlight">$2–10/筆</td></tr>
+        <tr><td>匯差</td><td>1.5–3%</td><td class="highlight">0.3–0.8%</td></tr>
+        <tr><td>營業時間</td><td>銀行工作日</td><td class="highlight">24/7/365</td></tr>
+        <tr><td>透明度</td><td>狀態不明、易卡中轉</td><td class="highlight">鏈上全程追蹤</td></tr>
+        <tr><td>金額上限</td><td>高</td><td>單筆建議 $5M 以下</td></tr>
+        <tr><td>地區覆蓋</td><td>幾乎全球</td><td>受合作對手分佈限制</td></tr>
+      </tbody>
+    </table>
+  </div>
 </section>
 
-<!-- ==================== SECTION 03 USDC TABLE ==================== -->
-<section>
-  <div class="container">
-    <div class="section-header">
-      <span class="section-number">03 / USDC</span>
-      <h2>USDC × 鏈 × 手續費</h2>
-      <span class="section-sub">Circle Distribution</span>
-    </div>
+<!-- ============================================================ -->
+<!-- SECTION 11 FEE MODEL                                         -->
+<!-- ============================================================ -->
+<section id="s11">
+  <div class="section-kicker">CHAPTER XI · FEE MODEL & REVENUE</div>
+  <h2><span class="chapter-num">XI.</span>費率模型與營收推估</h2>
+  <div class="section-lead">
+    一套分層費率設計，平衡市場競爭力、<br>合規成本與銀行利潤空間。
+  </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>鏈</th>
-            <th>USDC 地位</th>
-            <th>原生幣</th>
-            <th>幣價 (USD)</th>
-            <th>單筆手續費</th>
-            <th>備註</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="chain">Ethereum</td>
-            <td>最大宗</td>
-            <td>ETH</td>
-            <td>~$2,400</td>
-            <td class="mid">$0.5 – $7</td>
-            <td>機構 · DeFi · ETF 主場</td>
-          </tr>
-          <tr>
-            <td class="chain">Solana</td>
-            <td>第二大</td>
-            <td>SOL</td>
-            <td>~$85 – 125</td>
-            <td class="high">~$0.02</td>
-            <td>支付 · 高頻交易</td>
-          </tr>
-          <tr>
-            <td class="chain">Base (L2)</td>
-            <td>重要</td>
-            <td>ETH</td>
-            <td>~$2,400</td>
-            <td class="high">~$0.01 – 0.05</td>
-            <td>Coinbase 自家 L2</td>
-          </tr>
-          <tr>
-            <td class="chain">Arbitrum (L2)</td>
-            <td>重要</td>
-            <td>ETH</td>
-            <td>~$2,400</td>
-            <td class="high">~$0.02 – 0.1</td>
-            <td>DeFi 主力 L2</td>
-          </tr>
-          <tr>
-            <td class="chain">Polygon</td>
-            <td>中</td>
-            <td>POL</td>
-            <td>~$0.20</td>
-            <td class="high">~$0.001</td>
-            <td>—</td>
-          </tr>
-          <tr>
-            <td class="chain">Avalanche</td>
-            <td>中</td>
-            <td>AVAX</td>
-            <td>~$9 – 10</td>
-            <td class="high">~$0.02</td>
-            <td>—</td>
-          </tr>
-          <tr>
-            <td class="chain retired">Tron</td>
-            <td class="retired">已退出</td>
-            <td class="retired">—</td>
-            <td class="retired">—</td>
-            <td class="retired">—</td>
-            <td>2024/2 停止發行</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+  <h3><span class="num">11.1</span>費率設計三原則</h3>
 
-    <p style="font-size: 13px; color: var(--text-faint); font-family: 'JetBrains Mono', monospace; margin-top: 16px;">
-      // L2 (Arbitrum / Base / Optimism) Gas 以 ETH 計價，但批次打包至主網故成本大幅降低
+  <ol class="custom-numbered">
+    <li><strong>相對於 SWIFT 要明顯便宜</strong>：否則沒有切入理由（目標：節省 40–70%）</li>
+    <li><strong>相對於加密 OTC（XREX 等）要有信任溢價</strong>：銀行品牌與合規值得 0.1–0.3% 的溢價</li>
+    <li><strong>階梯式設計</strong>：用量越大費率越低，鎖住大客戶</li>
+  </ol>
+
+  <h3><span class="num">11.2</span>建議費率表</h3>
+
+  <div class="fee-model">
+    <div class="fee-model-header">
+      <h4>代收代付服務 · 入金（Inbound）</h4>
+      <span class="tier">TIER A</span>
+    </div>
+    <div class="fee-model-body">
+      <div class="fee-row">
+        <span class="fee-label">每月穩定幣入金 &lt; $100K</span>
+        <span class="fee-value">0.50% · 最低 $2/筆</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">$100K – $1M</span>
+        <span class="fee-value">0.30% · 最低 $2/筆</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">$1M – $10M</span>
+        <span class="fee-value">0.20%</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">&gt; $10M</span>
+        <span class="fee-value">0.10–0.15% · 議價</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">結匯 TWD 匯差</span>
+        <span class="fee-value">中心匯率 +0.3–0.5%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="fee-model">
+    <div class="fee-model-header">
+      <h4>跨境支付軌道 · 出金（Outbound）</h4>
+      <span class="tier">TIER B</span>
+    </div>
+    <div class="fee-model-body">
+      <div class="fee-row">
+        <span class="fee-label">單筆 &lt; $10K</span>
+        <span class="fee-value">$5 固定 + 0.3% 匯差</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">$10K – $100K</span>
+        <span class="fee-value">$15 固定 + 0.25% 匯差</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">$100K – $1M</span>
+        <span class="fee-value">$50 固定 + 0.20% 匯差</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">&gt; $1M</span>
+        <span class="fee-value">$100 固定 + 0.15% 匯差</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">緊急優先處理</span>
+        <span class="fee-value">+$10/筆</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="fee-model">
+    <div class="fee-model-header">
+      <h4>企業穩定幣錢包 · 訂閱費</h4>
+      <span class="tier">TIER C</span>
+    </div>
+    <div class="fee-model-body">
+      <div class="fee-row">
+        <span class="fee-label">基礎版（單鏈、≤ 3 用戶）</span>
+        <span class="fee-value">免費</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">商務版（多鏈、≤ 10 用戶、API）</span>
+        <span class="fee-value">NT$3,000/月</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">企業版（自訂整合、無限用戶、SLA）</span>
+        <span class="fee-value">NT$15,000–50,000/月</span>
+      </div>
+      <div class="fee-row">
+        <span class="fee-label">客製化（大型集團、特殊合規）</span>
+        <span class="fee-value">議價 / 顧問費另計</span>
+      </div>
+    </div>
+  </div>
+
+  <h3><span class="num">11.3</span>營收推估模型</h3>
+
+  <p>
+    以一家<strong>中型上市銀行</strong>（企業客戶基礎約 5 萬家，其中活躍出口商約 5,000 家）為基礎情境估算：
+  </p>
+
+  <div class="table-wrap">
+    <div class="table-caption">Table 11.1 — 三年營收推估（新台幣億元）</div>
+    <table>
+      <thead>
+        <tr>
+          <th>年度</th>
+          <th>滲透率</th>
+          <th>活躍客戶</th>
+          <th>年流量</th>
+          <th>平均費率</th>
+          <th>年營收</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Y1（2026–27）</strong></td>
+          <td>2%</td>
+          <td>100</td>
+          <td>NT$50B</td>
+          <td>0.35%</td>
+          <td class="highlight">NT$1.75 億</td>
+        </tr>
+        <tr>
+          <td><strong>Y2（2027–28）</strong></td>
+          <td>8%</td>
+          <td>400</td>
+          <td>NT$250B</td>
+          <td>0.30%</td>
+          <td class="highlight">NT$7.5 億</td>
+        </tr>
+        <tr>
+          <td><strong>Y3（2028–29）</strong></td>
+          <td>20%</td>
+          <td>1,000</td>
+          <td>NT$800B</td>
+          <td>0.25%</td>
+          <td class="highlight">NT$20 億</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-source">假設：平均客戶年流量 NT$500M–$800M；含手續費+匯差+訂閱費；未計入融資業務延伸收入</div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-label">⬥ 成本結構提醒</div>
+    <p>
+      上述為<strong>毛營收</strong>。實際淨利需扣除：（a）鏈上 gas 成本約佔流量 0.01–0.05%、（b）托管方費用 10–20 bps、（c）合規/KYT 服務每月 $10K–50K、（d）資訊系統建置一次性 NT$2–5 億、（e）合規與資安人員編制。估計前 2 年為投資期、Y3 開始有顯著淨利貢獻。
     </p>
   </div>
+
+  <h3><span class="num">11.4</span>營收延伸：從手續費到生態</h3>
+
+  <p>
+    上述數字僅是「支付手續費」的池子。真正的大機會在<strong>業務延伸</strong>：
+  </p>
+
+  <ul class="custom-list">
+    <li><strong>應收帳款融資</strong>：基於鏈上付款記錄做即時信用評估，毛利率可達 2–5%</li>
+    <li><strong>外匯避險產品</strong>：為持有穩定幣的企業提供 FX Forward、Option</li>
+    <li><strong>貿易融資</strong>：整合 L/C、OA 與穩定幣結算，降低企業財務成本</li>
+    <li><strong>現金管理</strong>：企業閒置穩定幣可參與短期國債 Repo、貨幣市場工具</li>
+    <li><strong>託管手續費</strong>：為其他金融機構提供 BaaS 基礎設施</li>
+  </ul>
+
+  <p>
+    結合這些延伸，Y3 之後<strong>單一客戶年 ARPU 可從 NT$20 萬提升至 NT$50–100 萬</strong>。
+  </p>
 </section>
 
-<!-- ==================== SECTION 04 WHY FEES DIFFER ==================== -->
-<section>
-  <div class="container">
-    <div class="section-header">
-      <span class="section-number">04 / 機制</span>
-      <h2>為何各鏈手續費差異如此懸殊？</h2>
-      <span class="section-sub">Fee Mechanics</span>
+<!-- ============================================================ -->
+<!-- SECTION 12 ROADMAP & RISK                                    -->
+<!-- ============================================================ -->
+<section id="s12">
+  <div class="section-kicker">CHAPTER XII · ROADMAP & RISK</div>
+  <h2><span class="chapter-num">XII.</span>執行路線圖與風險評估</h2>
+  <div class="section-lead">
+    從現在到 2028 年的執行藍圖，<br>以及必須正視的七大風險。
+  </div>
+
+  <h3><span class="num">12.1</span>24 個月執行路線圖</h3>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-date">2026 Q2 · 準備期</div>
+      <div class="timeline-title">內部組建 + 合作夥伴談判</div>
+      <p>成立數位資產部門（預計 15–25 人）；與 Fireblocks / BitGo / Chainalysis 商談技術合作；選定 1–2 家國際做市商建立流動性池。</p>
     </div>
-
-    <div class="why-grid">
-      <div class="why-card">
-        <div class="num">→ 01</div>
-        <h4>Ethereum · 拍賣式 Gas</h4>
-        <p>
-          基礎轉帳 <code>21,000 gas</code>，ERC-20 轉帳約 <code>55,000 gas</code>，
-          再乘 gas price 與 ETH 美元價。ETH 價格高是費用偏貴主因。
-        </p>
-      </div>
-
-      <div class="why-card">
-        <div class="num">→ 02</div>
-        <h4>Tron · Energy + Bandwidth</h4>
-        <p>
-          採資源模型，用戶可質押 TRX 換取 Energy/Bandwidth，
-          也可直接燒 TRX。<code>2025/8</code> 能源單價從 210 sun 降至 100 sun，費用減半。
-        </p>
-      </div>
-
-      <div class="why-card">
-        <div class="num">→ 03</div>
-        <h4>Solana · 簽名計費</h4>
-        <p>
-          固定 <code>0.000005 SOL</code>/簽名 + 少量優先費，
-          與金額<strong>完全無關</strong>。消耗 Compute Units 愈多則優先費稍高。
-        </p>
-      </div>
-
-      <div class="why-card">
-        <div class="num">→ 04</div>
-        <h4>EVM 相容鏈 · 原生幣便宜</h4>
-        <p>
-          Polygon、BSC、Avalanche 沿用 EVM 邏輯，但原生幣價格較低，
-          因此美元計價的手續費極低，適合高頻小額應用。
-        </p>
-      </div>
-
-      <div class="why-card">
-        <div class="num">→ 05</div>
-        <h4>新一代高效能鏈</h4>
-        <p>
-          TON、Aptos 設計時即把<strong>低手續費</strong>當核心賣點，
-          單筆成本通常低於 <code>$0.0001</code>，但生態規模仍在發展。
-        </p>
-      </div>
-
-      <div class="why-card">
-        <div class="num">→ 06</div>
-        <h4>Layer 2 · 批次結算</h4>
-        <p>
-          Arbitrum / Base / Optimism 透過 Rollup 把多筆交易打包上主網，
-          成本可壓到主網的 <strong>1 – 5 %</strong>，但仍用 ETH 計費。
-        </p>
-      </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2026 Q3 · 法遵取得</div>
+      <div class="timeline-title">配合虛資法子法上路</div>
+      <p>申請相關牌照/許可；完成內控規範、風險管理框架、AML 政策；與金管會、央行溝通業務模式。</p>
     </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2026 Q4 · MVP 上線</div>
+      <div class="timeline-title">代收代付服務試營運</div>
+      <p>選定 20–50 家白名單企業客戶測試；單月額度上限 $1M；重點收集真實使用資料與痛點。</p>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2027 H1 · 正式上線</div>
+      <div class="timeline-title">公開接受企業申請</div>
+      <p>產品 A（代收代付）全面開放；同步推出產品 B（跨境付款）Beta 版；目標 Y1 內取得 100 家活躍客戶。</p>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2027 H2 · 生態擴展</div>
+      <div class="timeline-title">貿易融資整合</div>
+      <p>推出基於穩定幣收款紀錄的應收帳款融資；與台灣出口保險公司合作降低風險；切入半導體供應鏈等垂直市場。</p>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-date">2028 · 平台化</div>
+      <div class="timeline-title">TWD 穩定幣 + BaaS</div>
+      <p>待監管成熟，申請 TWD 代幣化存款；對中小型銀行/PSP 提供託管清算服務；與國際穩定幣發行商建立直連走廊。</p>
+    </div>
+  </div>
+
+  <h3><span class="num">12.2</span>七大風險矩陣</h3>
+
+  <div class="table-wrap">
+    <div class="table-caption">Table 12.1 — 風險評估與應對</div>
+    <table>
+      <thead>
+        <tr>
+          <th>風險類型</th>
+          <th>嚴重程度</th>
+          <th>應對策略</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>監管不確定性</strong></td>
+          <td class="highlight">高</td>
+          <td>與金管會保持密切溝通；採保守合規路線；保留法規變動的彈性</td>
+        </tr>
+        <tr>
+          <td><strong>穩定幣脫鉤風險</strong></td>
+          <td>中</td>
+          <td>限制持有期間；優先使用 USDC；建立即時監控與自動退出機制</td>
+        </tr>
+        <tr>
+          <td><strong>鏈上安全事件</strong></td>
+          <td>高</td>
+          <td>採 MPC 托管；冷熱錢包分離；保險覆蓋；限制單筆與單日金額</td>
+        </tr>
+        <tr>
+          <td><strong>AML / 制裁合規</strong></td>
+          <td class="highlight">高</td>
+          <td>Chainalysis 全筆篩檢；地址風險評分；可疑交易即時凍結與申報</td>
+        </tr>
+        <tr>
+          <td><strong>競爭對手搶市</strong></td>
+          <td>中</td>
+          <td>先發優勢+客戶黏性；聚焦台灣在地化服務；避開國際巨頭的主戰場</td>
+        </tr>
+        <tr>
+          <td><strong>技術人才短缺</strong></td>
+          <td>中</td>
+          <td>與大學合作培訓；挖角加密原生公司；善用外包但保留核心自主</td>
+        </tr>
+        <tr>
+          <td><strong>聲譽風險</strong></td>
+          <td>中</td>
+          <td>嚴選客戶；避開高風險地區；公開透明的資訊揭露</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3><span class="num">12.3</span>關鍵成功因素（KSF）</h3>
+
+  <ol class="custom-numbered">
+    <li><strong>速度</strong>：2026 下半年上路是黃金窗口，晚 6 個月可能失去先發優勢</li>
+    <li><strong>客戶選擇</strong>：從<strong>既有外匯大客戶</strong>切入，而非盲目擴大</li>
+    <li><strong>合規優先</strong>：用合規當護城河，而非當成本</li>
+    <li><strong>生態聯盟</strong>：與 Circle、Visa、Fireblocks 建立夥伴關係，不要單打獨鬥</li>
+    <li><strong>使用者體驗</strong>：企業主不懂鏈上操作，介面必須「像匯款一樣簡單」</li>
+    <li><strong>數據資產</strong>：鏈上收付款數據本身是寶貴資產，是延伸融資業務的基礎</li>
+    <li><strong>長期投入</strong>：前 2 年虧損是正常的，KPI 應設為「活躍客戶數+流量」而非「短期利潤」</li>
+  </ol>
+
+  <div class="pullquote">
+    穩定幣不會取代銀行。但<strong>不用穩定幣的銀行，會被用穩定幣的銀行取代</strong>。對台灣銀行而言，這不是要不要做的問題，而是<strong>誰先做、誰做得深、誰能把客戶留下來</strong>。
   </div>
 </section>
 
-<!-- ==================== SECTION 05 SCENARIO COST ==================== -->
-<section>
-  <div class="container">
-    <div class="section-header">
-      <span class="section-number">05 / 情境</span>
-      <h2>實際成本：轉 1,000 USDT/USDC</h2>
-      <span class="section-sub">Real-World Scenarios</span>
-    </div>
-
-    <div class="scenario-grid">
-      <div class="scenario">
-        <div class="scenario-title">大額機構轉帳 · $100K+</div>
-        <div class="scenario-chain">Ethereum</div>
-        <div class="scenario-fee">$3 – 7</div>
-        <div class="scenario-note">佔比 0.003 – 0.007% · 合理</div>
-      </div>
-
-      <div class="scenario">
-        <div class="scenario-title">中額商業支付 · $1K – 10K</div>
-        <div class="scenario-chain">Solana / BSC / Polygon</div>
-        <div class="scenario-fee">$0.02 – 0.2</div>
-        <div class="scenario-note">幾乎可忽略</div>
-      </div>
-
-      <div class="scenario">
-        <div class="scenario-title">小額跨境匯款 · $10 – 100</div>
-        <div class="scenario-chain">Polygon / TON / Solana</div>
-        <div class="scenario-fee">$0.001 – 0.02</div>
-        <div class="scenario-note">極低 · 利潤可保</div>
-      </div>
-
-      <div class="scenario warn">
-        <div class="scenario-title">小額 $10 – 100 但對方只用 Tron</div>
-        <div class="scenario-chain">Tron</div>
-        <div class="scenario-fee">$2 – 4</div>
-        <div class="scenario-note" style="color: var(--danger);">⚠ 佔比 2 – 40% · 不划算</div>
-      </div>
-
-      <div class="scenario">
-        <div class="scenario-title">DeFi 互動 · Swap / LP</div>
-        <div class="scenario-chain">Arbitrum / Base</div>
-        <div class="scenario-fee">$0.1 – 1</div>
-        <div class="scenario-note">L2 是 DeFi 的甜蜜點</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ==================== SECTION 06 INSIGHTS ==================== -->
-<section>
-  <div class="container">
-    <div class="section-header">
-      <span class="section-number">06 / 洞察</span>
-      <h2>關鍵觀察</h2>
-      <span class="section-sub">Strategic Insights</span>
-    </div>
-
-    <div class="insight">
-      <div class="insight-label">INSIGHT 01</div>
-      <h3>Tron 的矛盾：市佔第一 ≠ 手續費最低</h3>
-      <p>
-        Tron 承載 <span class="highlight">~42% USDT 流通量</span>、
-        <span class="highlight">Q3 2025 處理全球 65% 小額 USDT 轉帳</span>，
-        但實際手續費（$2 – 4）卻比 Solana、Polygon 高出百倍以上。
-        Tron 真正的護城河是<strong>交易所支援度與使用者習慣</strong>，不是成本。
-      </p>
-    </div>
-
-    <div class="insight">
-      <div class="insight-label">INSIGHT 02</div>
-      <h3>原生幣價格高 ≠ 手續費就貴</h3>
-      <p>
-        Polygon（POL ~$0.20）跟 Solana（SOL ~$85）原生幣差距 400 倍，
-        但實際手續費幾乎一樣低。關鍵在<strong>計費邏輯</strong>而非幣價本身——
-        Ethereum 貴的原因是「每筆運算乘上 ETH 價」，
-        而 Solana/Polygon 用固定或極小的單位收費。
-      </p>
-    </div>
-
-    <div class="insight">
-      <div class="insight-label">INSIGHT 03</div>
-      <h3>USDC 是受監管市場的贏家</h3>
-      <p>
-        雖然 USDT 市值仍領先 USDC 兩倍以上，
-        但在 <span class="highlight">受監管 B2B 結算市場，USDC 已拿下 80%+ 佔有率</span>。
-        Circle 策略性放棄 Tron、深耕 Ethereum / Solana / Base，
-        反映出機構與法遵路線是其核心競爭場域。
-      </p>
-    </div>
-
-    <div class="insight">
-      <div class="insight-label">INSIGHT 04</div>
-      <h3>別忘了預留原生幣當 Gas</h3>
-      <p style="margin-bottom: 0;">
-        每條鏈都要預留原生幣支付手續費——這是最多新手卡關的地方。建議最低保留：
-      </p>
-      <div class="reserve-list">
-        <div class="reserve-item">
-          <span class="reserve-chain">Tron</span>
-          <span class="reserve-amount">15–30 TRX (~$5–10)</span>
-        </div>
-        <div class="reserve-item">
-          <span class="reserve-chain">Ethereum</span>
-          <span class="reserve-amount">0.01 ETH (~$24)</span>
-        </div>
-        <div class="reserve-item">
-          <span class="reserve-chain">Solana</span>
-          <span class="reserve-amount">0.01 SOL (~$1)</span>
-        </div>
-        <div class="reserve-item">
-          <span class="reserve-chain">BSC</span>
-          <span class="reserve-amount">0.005 BNB (~$3)</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ==================== SECTION 07 STRATEGY ==================== -->
-<section>
-  <div class="container">
-    <div class="section-header">
-      <span class="section-number">07 / 策略</span>
-      <h2>依角色選擇的穩定幣組合</h2>
-      <span class="section-sub">Strategy Matrix</span>
-    </div>
-
-    <div class="strategy-table">
-      <table>
-        <thead>
-          <tr>
-            <th>你的角色</th>
-            <th>推薦穩定幣 × 鏈</th>
-            <th>原因</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="strategy-role">個人小額匯款</td>
-            <td class="strategy-rec">USDT on TON / Solana · USDC on Polygon</td>
-            <td>手續費低 · 熟悉介面</td>
-          </tr>
-          <tr>
-            <td class="strategy-role">跨境商業支付</td>
-            <td class="strategy-rec">USDC on Solana / Base</td>
-            <td>合規 · 速度 · 成本平衡</td>
-          </tr>
-          <tr>
-            <td class="strategy-role">機構級大額結算</td>
-            <td class="strategy-rec">USDC on Ethereum</td>
-            <td>流動性深 · 法遵完整</td>
-          </tr>
-          <tr>
-            <td class="strategy-role">交易所進出金</td>
-            <td class="strategy-rec">USDT on Tron / Solana</td>
-            <td>視交易所支援而定</td>
-          </tr>
-          <tr>
-            <td class="strategy-role">DeFi 使用者</td>
-            <td class="strategy-rec">USDC on Arbitrum / Base</td>
-            <td>L2 生態最完整</td>
-          </tr>
-          <tr>
-            <td class="strategy-role">企業財務整合</td>
-            <td class="strategy-rec">USDC 多鏈 + CCTP</td>
-            <td>Circle 原生跨鏈協議</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- ==================== FOOTER ==================== -->
+<!-- ============================================================ -->
+<!-- FOOTER                                                       -->
+<!-- ============================================================ -->
 <footer>
-  <div class="container">
-    <div class="disclaimer">
-      <strong>⚠ DISCLAIMER</strong>
-      本報告所載幣價、手續費、供應量皆為 2026 年 4 月前後之參考數據，加密市場波動劇烈，
-      實際操作請以錢包、區塊瀏覽器當下顯示為準。本文內容為資訊整理，
-      <strong style="display: inline; color: var(--warn); letter-spacing: normal;">不構成投資建議或法律意見</strong>。
-    </div>
+  <div class="footer-title">— Appendix & Disclosures —</div>
 
-    <div class="footer-mark">
-      COMPILED <span class="bar"></span>
-      2026 · 04 · 20
-      <span class="bar"></span> END OF REPORT
-    </div>
+  <div class="disclaimer-box">
+    <strong>⬥ 免責聲明</strong>
+    本報告所載數據、預測、費率建議僅為研究分析用途，不構成投資建議、法律意見或商業承諾。
+    穩定幣、加密貨幣相關業務涉及高度監管不確定性與技術風險，讀者應依據自身專業判斷並諮詢合規、法律、稅務專家。
+    市場數據來自 McKinsey、Artemis、Chainalysis、IMF、Circle、Tether、金管會等公開來源，不同機構的方法論有差異，實際數字可能有出入。
+    本文撰寫時間為 2026 年 4 月，相關法規、市場結構可能於未來快速變化。
   </div>
+
+  <div class="sources">
+    <h5>主要資料來源</h5>
+    <p>
+      McKinsey &amp; Artemis Analytics (2026). "Stablecoins in Payments: What the Raw Transaction Numbers Miss"<br>
+      Binance Research Full-Year 2025 Report.<br>
+      Chainalysis. "Stablecoin Utility and the Future of Payments" (2026).<br>
+      IMF Blog. "How Stablecoins Can Improve Payments and Global Finance" (Dec 2025).<br>
+      Circle. "State of the USDC Economy" &amp; Multichain USDC Reports (2026).<br>
+      AlphaPoint. "Cross-Border &amp; Global Payments with Stablecoins: Definitive 2026 Guide".<br>
+      Fireblocks. Stablecoin Adoption Report (2025).<br>
+      金管會 · 彭金隆立法院備詢紀錄 (2025-12-03).<br>
+      動區動趨 · 台灣穩定幣法制化相關報導.<br>
+      今周刊 · 「穩定幣很夯，監管機構很燒腦」(2025-12).<br>
+      玉山科技協會 · 2025 年度論壇紀要.<br>
+      JP Morgan Kinexys / JPM Coin 官方文件 (2025–2026).<br>
+      PYMNTS, American Banker, The Block, CoinDesk 產業報導.
+    </p>
+  </div>
+
+  <div class="end-mark">END OF REPORT</div>
 </footer>
+
+</div>
 
 </body>
 </html>
