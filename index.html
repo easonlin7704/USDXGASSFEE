@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>穩定幣鏈上分析 · Stablecoin × Chain × Fee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Serif+TC:wght@400;600;900&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e0d;
+    --bg-2: #11181a;
+    --panel: #141c1e;
+    --panel-2: #1a2326;
+    --line: #2a3a3e;
+    --text: #e8f0ee;
+    --text-dim: #8da09c;
+    --text-faint: #5a6e6a;
+    --accent: #00ff9d;
+    --accent-2: #7df5c4;
+    --warn: #ffcb4a;
+    --danger: #ff6b6b;
+    --usdt: #50af95;
+    --usdc: #2775ca;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', 'Noto Serif TC', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(0, 255, 157, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(39, 117, 202, 0.04) 0%, transparent 40%);
+    background-attachment: fixed;
+  }
+
+  /* Grid noise texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ========== HERO ========== */
+  .hero {
+    padding: 80px 32px 60px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  .tag-line {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 28px;
+  }
+
+  .tag-line::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    max-width: 200px;
+  }
+
+  .pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+
+  h1 {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 900;
+    font-size: clamp(40px, 6vw, 84px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+
+  h1 .accent {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  h1 .slash {
+    color: var(--text-faint);
+    font-weight: 300;
+    margin: 0 0.1em;
+  }
+
+  .hero-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 32px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px dashed var(--line);
+  }
+
+  .meta-item {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .meta-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .meta-value {
+    font-size: 18px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .meta-value.hi { color: var(--accent); }
+
+  /* ========== SECTIONS ========== */
+  section {
+    padding: 80px 0;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+  }
+
+  .section-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  h2 {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 900;
+    font-size: clamp(28px, 3.5vw, 44px);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    flex: 1;
+    min-width: 300px;
+  }
+
+  .section-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-faint);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 600;
+    font-size: 22px;
+    margin-bottom: 20px;
+    letter-spacing: -0.005em;
+  }
+
+  p { margin-bottom: 16px; color: var(--text-dim); }
+  p strong { color: var(--text); font-weight: 500; }
+
+  /* ========== OVERVIEW GRID ========== */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .coin-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 40px 36px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+
+  .coin-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+  }
+
+  .coin-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--accent);
+  }
+
+  .coin-card.usdt::before { background: var(--usdt); }
+  .coin-card.usdc::before { background: var(--usdc); }
+
+  .coin-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    padding: 4px 10px;
+    border-radius: 2px;
+    margin-bottom: 16px;
+  }
+
+  .usdt .coin-badge { background: rgba(80, 175, 149, 0.15); color: var(--usdt); }
+  .usdc .coin-badge { background: rgba(39, 117, 202, 0.15); color: #4a8fd8; }
+
+  .coin-name {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 36px;
+    font-weight: 900;
+    margin-bottom: 4px;
+  }
+
+  .coin-issuer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-bottom: 32px;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px dashed var(--line);
+    align-items: baseline;
+  }
+
+  .stat-row:last-child { border-bottom: none; }
+
+  .stat-label {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .stat-value.big {
+    font-size: 28px;
+    color: var(--accent);
+  }
+
+  /* ========== TABLES ========== */
+  .table-wrap {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    overflow-x: auto;
+    margin-bottom: 24px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    min-width: 700px;
+  }
+
+  thead {
+    background: var(--panel-2);
+    border-bottom: 2px solid var(--accent);
+  }
+
+  th {
+    text-align: left;
+    padding: 16px 20px;
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  td {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    color: var(--text-dim);
+    vertical-align: middle;
+  }
+
+  tbody tr { transition: background 0.2s ease; }
+  tbody tr:hover { background: rgba(0, 255, 157, 0.03); }
+
+  td.chain {
+    color: var(--text);
+    font-weight: 500;
+    position: relative;
+    padding-left: 32px;
+  }
+
+  td.chain::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+
+  td.high { color: var(--accent); font-weight: 500; }
+  td.mid { color: var(--warn); }
+  td.low { color: var(--danger); font-weight: 500; }
+  td.retired { color: var(--text-faint); text-decoration: line-through; }
+
+  .fee-bar {
+    display: inline-block;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+    vertical-align: middle;
+    margin-left: 8px;
+    opacity: 0.4;
+  }
+
+  /* ========== WHY SECTION ========== */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+
+  .why-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 32px 28px;
+    position: relative;
+  }
+
+  .why-card .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    margin-bottom: 12px;
+  }
+
+  .why-card h4 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .why-card p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  .why-card code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--bg-2);
+    padding: 2px 8px;
+    border-radius: 2px;
+    color: var(--accent);
+  }
+
+  /* ========== SCENARIO ========== */
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .scenario {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 24px 28px;
+    border-left: 3px solid var(--accent);
+  }
+
+  .scenario.warn { border-left-color: var(--danger); }
+
+  .scenario-title {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .scenario-chain {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .scenario-fee {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .scenario.warn .scenario-fee { color: var(--danger); }
+
+  .scenario-note {
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ========== INSIGHTS ========== */
+  .insight {
+    background: linear-gradient(135deg, var(--panel) 0%, var(--panel-2) 100%);
+    border: 1px solid var(--line);
+    padding: 36px 40px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .insight-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .insight h3 {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .insight p {
+    color: var(--text-dim);
+    max-width: 800px;
+  }
+
+  .highlight {
+    background: rgba(0, 255, 157, 0.1);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+  }
+
+  /* ========== RESERVE LIST ========== */
+  .reserve-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .reserve-item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .reserve-chain {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .reserve-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--accent);
+  }
+
+  /* ========== STRATEGY ========== */
+  .strategy-table {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    overflow-x: auto;
+  }
+
+  .strategy-table table { min-width: 600px; }
+
+  .strategy-role {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .strategy-rec {
+    color: var(--accent);
+  }
+
+  /* ========== FOOTER ========== */
+  footer {
+    padding: 60px 0 40px;
+    text-align: center;
+    border-top: 1px solid var(--line);
+  }
+
+  .disclaimer {
+    max-width: 700px;
+    margin: 0 auto 40px;
+    padding: 24px 28px;
+    background: rgba(255, 203, 74, 0.05);
+    border: 1px solid rgba(255, 203, 74, 0.2);
+    font-size: 13px;
+    color: var(--text-dim);
+    text-align: left;
+    line-height: 1.7;
+  }
+
+  .disclaimer strong {
+    color: var(--warn);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .footer-mark {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.2em;
+  }
+
+  .footer-mark .bar {
+    display: inline-block;
+    width: 40px;
+    height: 1px;
+    background: var(--text-faint);
+    vertical-align: middle;
+    margin: 0 12px;
+  }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 768px) {
+    .container { padding: 0 20px; }
+    .hero { padding: 60px 20px 40px; }
+    .overview-grid { grid-template-columns: 1fr; }
+    section { padding: 60px 0; }
+    h1 { font-size: 38px; }
+    .coin-card { padding: 28px 24px; }
+    .insight { padding: 24px 24px; }
+  }
+
+  /* Fade-in animation */
+  section, .hero-inner > * {
+    animation: fadeUp 0.8s ease both;
+  }
+  section:nth-child(1) { animation-delay: 0.1s; }
+  section:nth-child(2) { animation-delay: 0.2s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== HERO ==================== -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="tag-line">
+      <span class="pulse"></span>
+      STABLECOIN INTELLIGENCE REPORT · 2026.04
+    </div>
+
+    <h1>
+      穩定幣<span class="slash">/</span><span class="accent">鏈上分布</span>
+      <br>與<span class="accent">手續費</span>解構
+    </h1>
+
+    <p style="font-size: 18px; max-width: 680px; color: var(--text-dim); font-weight: 300;">
+      從 USDT 與 USDC 的鏈上資金流向，延伸到每條主力鏈的原生幣價格與實際轉帳成本，
+      一份寫給金融科技、支付與加密從業者的決策參考。
+    </p>
+
+    <div class="hero-meta">
+      <div class="meta-item">
+        <div class="meta-label">Total USDT Supply</div>
+        <div class="meta-value hi">~$190.8 B</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Total USDC Supply</div>
+        <div class="meta-value hi">~$78.6 B</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Blockchains Supported</div>
+        <div class="meta-value">USDT ~15 / USDC 32</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Data As Of</div>
+        <div class="meta-value">2026 · 04 · 20</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SECTION 01 OVERVIEW ==================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="section-number">01 / 概況</span>
+      <h2>兩大穩定幣的版圖對照</h2>
+      <span class="section-sub">Market Overview</span>
+    </div>
+
+    <div class="overview-grid">
+      <div class="coin-card usdt">
+        <span class="coin-badge">USDT · TETHER</span>
+        <div class="coin-name">Tether</div>
+        <div class="coin-issuer">Issued by Tether Holdings</div>
+
+        <div class="stat-row">
+          <span class="stat-label">流通總量</span>
+          <span class="stat-value big">$190 B</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">主力鏈</span>
+          <span class="stat-value">Tron + Ethereum</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">支援鏈數</span>
+          <span class="stat-value">~15</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">策略定位</span>
+          <span class="stat-value">零售支付 · 新興市場</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Tron 支援</span>
+          <span class="stat-value" style="color: var(--accent);">✓ 最大市場</span>
+        </div>
+      </div>
+
+      <div class="coin-card usdc">
+        <span class="coin-badge">USDC · CIRCLE</span>
+        <div class="coin-name">USD Coin</div>
+        <div class="coin-issuer">Issued by Circle</div>
+
+        <div class="stat-row">
+          <span class="stat-label">流通總量</span>
+          <span class="stat-value big">$78.6 B</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">主力鏈</span>
+          <span class="stat-value">ETH · SOL · Base</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">支援鏈數</span>
+          <span class="stat-value">32 條</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">策略定位</span>
+          <span class="stat-value">機構 · 法遵 · B2B</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Tron 支援</span>
+          <span class="stat-value" style="color: var(--danger);">✗ 2024 已退出</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 40px; font-size: 14px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; padding: 20px 24px; border-left: 2px solid var(--accent); background: var(--panel);">
+      <strong style="color: var(--accent);">KEY INSIGHT &nbsp;→&nbsp;</strong>
+      2026 Q1，USDC 交易量達 $2.55 兆、USDT 為 $1.49 兆；USDC 在受監管 B2B 結算市場佔比已超過 80%。
+      USDT 仍在市值上領先，但 USDC 在機構場景快速拉近差距。
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SECTION 02 USDT TABLE ==================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="section-number">02 / USDT</span>
+      <h2>USDT × 鏈 × 手續費</h2>
+      <span class="section-sub">Tether Distribution</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>鏈</th>
+            <th>USDT 供應</th>
+            <th>原生幣</th>
+            <th>幣價 (USD)</th>
+            <th>單筆手續費</th>
+            <th>備註</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="chain">Tron (TRC-20)</td>
+            <td>~$85 B</td>
+            <td>TRX</td>
+            <td>~$0.33</td>
+            <td class="low">$1.88 – $3.97</td>
+            <td>轉新錢包需 13.4 TRX (~$4.4)</td>
+          </tr>
+          <tr>
+            <td class="chain">Ethereum (ERC-20)</td>
+            <td>~$77 B</td>
+            <td>ETH</td>
+            <td>~$2,400</td>
+            <td class="mid">$0.5 – $7</td>
+            <td>壅塞時可飆至 $30+</td>
+          </tr>
+          <tr>
+            <td class="chain">Solana (SPL)</td>
+            <td>中等</td>
+            <td>SOL</td>
+            <td>~$85 – 125</td>
+            <td class="high">~$0.019</td>
+            <td>首次收款 ~0.002 SOL 開戶</td>
+          </tr>
+          <tr>
+            <td class="chain">BNB Chain (BEP-20)</td>
+            <td>中等</td>
+            <td>BNB</td>
+            <td>~$620 – 855</td>
+            <td class="high">~$0.031</td>
+            <td>生態完整、CEX 親和</td>
+          </tr>
+          <tr>
+            <td class="chain">Polygon</td>
+            <td>較小</td>
+            <td>POL</td>
+            <td>~$0.20</td>
+            <td class="high">~$0.0014</td>
+            <td>費用幾乎可忽略</td>
+          </tr>
+          <tr>
+            <td class="chain">TON</td>
+            <td>小</td>
+            <td>TON</td>
+            <td>~$2 – 3</td>
+            <td class="high">~$0.0001</td>
+            <td>Telegram 生態整合</td>
+          </tr>
+          <tr>
+            <td class="chain">Aptos</td>
+            <td>小</td>
+            <td>APT</td>
+            <td>~$4 – 5</td>
+            <td class="high">~$0.0001</td>
+            <td>高效能新興鏈</td>
+          </tr>
+          <tr>
+            <td class="chain">Avalanche</td>
+            <td>小</td>
+            <td>AVAX</td>
+            <td>~$9 – 10</td>
+            <td class="high">~$0.019</td>
+            <td>EVM 相容 L1</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size: 13px; color: var(--text-faint); font-family: 'JetBrains Mono', monospace; margin-top: 16px;">
+      // Tron 承載約 42% USDT 流通量 · 過去 12 個月 USDT 轉帳量達 $7.9 兆 · 小額零售支付主場
+    </p>
+  </div>
+</section>
+
+<!-- ==================== SECTION 03 USDC TABLE ==================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="section-number">03 / USDC</span>
+      <h2>USDC × 鏈 × 手續費</h2>
+      <span class="section-sub">Circle Distribution</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>鏈</th>
+            <th>USDC 地位</th>
+            <th>原生幣</th>
+            <th>幣價 (USD)</th>
+            <th>單筆手續費</th>
+            <th>備註</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="chain">Ethereum</td>
+            <td>最大宗</td>
+            <td>ETH</td>
+            <td>~$2,400</td>
+            <td class="mid">$0.5 – $7</td>
+            <td>機構 · DeFi · ETF 主場</td>
+          </tr>
+          <tr>
+            <td class="chain">Solana</td>
+            <td>第二大</td>
+            <td>SOL</td>
+            <td>~$85 – 125</td>
+            <td class="high">~$0.02</td>
+            <td>支付 · 高頻交易</td>
+          </tr>
+          <tr>
+            <td class="chain">Base (L2)</td>
+            <td>重要</td>
+            <td>ETH</td>
+            <td>~$2,400</td>
+            <td class="high">~$0.01 – 0.05</td>
+            <td>Coinbase 自家 L2</td>
+          </tr>
+          <tr>
+            <td class="chain">Arbitrum (L2)</td>
+            <td>重要</td>
+            <td>ETH</td>
+            <td>~$2,400</td>
+            <td class="high">~$0.02 – 0.1</td>
+            <td>DeFi 主力 L2</td>
+          </tr>
+          <tr>
+            <td class="chain">Polygon</td>
+            <td>中</td>
+            <td>POL</td>
+            <td>~$0.20</td>
+            <td class="high">~$0.001</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="chain">Avalanche</td>
+            <td>中</td>
+            <td>AVAX</td>
+            <td>~$9 – 10</td>
+            <td class="high">~$0.02</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="chain retired">Tron</td>
+            <td class="retired">已退出</td>
+            <td class="retired">—</td>
+            <td class="retired">—</td>
+            <td class="retired">—</td>
+            <td>2024/2 停止發行</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size: 13px; color: var(--text-faint); font-family: 'JetBrains Mono', monospace; margin-top: 16px;">
+      // L2 (Arbitrum / Base / Optimism) Gas 以 ETH 計價，但批次打包至主網故成本大幅降低
+    </p>
+  </div>
+</section>
+
+<!-- ==================== SECTION 04 WHY FEES DIFFER ==================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="section-number">04 / 機制</span>
+      <h2>為何各鏈手續費差異如此懸殊？</h2>
+      <span class="section-sub">Fee Mechanics</span>
+    </div>
+
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="num">→ 01</div>
+        <h4>Ethereum · 拍賣式 Gas</h4>
+        <p>
+          基礎轉帳 <code>21,000 gas</code>，ERC-20 轉帳約 <code>55,000 gas</code>，
+          再乘 gas price 與 ETH 美元價。ETH 價格高是費用偏貴主因。
+        </p>
+      </div>
+
+      <div class="why-card">
+        <div class="num">→ 02</div>
+        <h4>Tron · Energy + Bandwidth</h4>
+        <p>
+          採資源模型，用戶可質押 TRX 換取 Energy/Bandwidth，
+          也可直接燒 TRX。<code>2025/8</code> 能源單價從 210 sun 降至 100 sun，費用減半。
+        </p>
+      </div>
+
+      <div class="why-card">
+        <div class="num">→ 03</div>
+        <h4>Solana · 簽名計費</h4>
+        <p>
+          固定 <code>0.000005 SOL</code>/簽名 + 少量優先費，
+          與金額<strong>完全無關</strong>。消耗 Compute Units 愈多則優先費稍高。
+        </p>
+      </div>
+
+      <div class="why-card">
+        <div class="num">→ 04</div>
+        <h4>EVM 相容鏈 · 原生幣便宜</h4>
+        <p>
+          Polygon、BSC、Avalanche 沿用 EVM 邏輯，但原生幣價格較低，
+          因此美元計價的手續費極低，適合高頻小額應用。
+        </p>
+      </div>
+
+      <div class="why-card">
+        <div class="num">→ 05</div>
+        <h4>新一代高效能鏈</h4>
+        <p>
+          TON、Aptos 設計時即把<strong>低手續費</strong>當核心賣點，
+          單筆成本通常低於 <code>$0.0001</code>，但生態規模仍在發展。
+        </p>
+      </div>
+
+      <div class="why-card">
+        <div class="num">→ 06</div>
+        <h4>Layer 2 · 批次結算</h4>
+        <p>
+          Arbitrum / Base / Optimism 透過 Rollup 把多筆交易打包上主網，
+          成本可壓到主網的 <strong>1 – 5 %</strong>，但仍用 ETH 計費。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SECTION 05 SCENARIO COST ==================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="section-number">05 / 情境</span>
+      <h2>實際成本：轉 1,000 USDT/USDC</h2>
+      <span class="section-sub">Real-World Scenarios</span>
+    </div>
+
+    <div class="scenario-grid">
+      <div class="scenario">
+        <div class="scenario-title">大額機構轉帳 · $100K+</div>
+        <div class="scenario-chain">Ethereum</div>
+        <div class="scenario-fee">$3 – 7</div>
+        <div class="scenario-note">佔比 0.003 – 0.007% · 合理</div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-title">中額商業支付 · $1K – 10K</div>
+        <div class="scenario-chain">Solana / BSC / Polygon</div>
+        <div class="scenario-fee">$0.02 – 0.2</div>
+        <div class="scenario-note">幾乎可忽略</div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-title">小額跨境匯款 · $10 – 100</div>
+        <div class="scenario-chain">Polygon / TON / Solana</div>
+        <div class="scenario-fee">$0.001 – 0.02</div>
+        <div class="scenario-note">極低 · 利潤可保</div>
+      </div>
+
+      <div class="scenario warn">
+        <div class="scenario-title">小額 $10 – 100 但對方只用 Tron</div>
+        <div class="scenario-chain">Tron</div>
+        <div class="scenario-fee">$2 – 4</div>
+        <div class="scenario-note" style="color: var(--danger);">⚠ 佔比 2 – 40% · 不划算</div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-title">DeFi 互動 · Swap / LP</div>
+        <div class="scenario-chain">Arbitrum / Base</div>
+        <div class="scenario-fee">$0.1 – 1</div>
+        <div class="scenario-note">L2 是 DeFi 的甜蜜點</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SECTION 06 INSIGHTS ==================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="section-number">06 / 洞察</span>
+      <h2>關鍵觀察</h2>
+      <span class="section-sub">Strategic Insights</span>
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">INSIGHT 01</div>
+      <h3>Tron 的矛盾：市佔第一 ≠ 手續費最低</h3>
+      <p>
+        Tron 承載 <span class="highlight">~42% USDT 流通量</span>、
+        <span class="highlight">Q3 2025 處理全球 65% 小額 USDT 轉帳</span>，
+        但實際手續費（$2 – 4）卻比 Solana、Polygon 高出百倍以上。
+        Tron 真正的護城河是<strong>交易所支援度與使用者習慣</strong>，不是成本。
+      </p>
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">INSIGHT 02</div>
+      <h3>原生幣價格高 ≠ 手續費就貴</h3>
+      <p>
+        Polygon（POL ~$0.20）跟 Solana（SOL ~$85）原生幣差距 400 倍，
+        但實際手續費幾乎一樣低。關鍵在<strong>計費邏輯</strong>而非幣價本身——
+        Ethereum 貴的原因是「每筆運算乘上 ETH 價」，
+        而 Solana/Polygon 用固定或極小的單位收費。
+      </p>
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">INSIGHT 03</div>
+      <h3>USDC 是受監管市場的贏家</h3>
+      <p>
+        雖然 USDT 市值仍領先 USDC 兩倍以上，
+        但在 <span class="highlight">受監管 B2B 結算市場，USDC 已拿下 80%+ 佔有率</span>。
+        Circle 策略性放棄 Tron、深耕 Ethereum / Solana / Base，
+        反映出機構與法遵路線是其核心競爭場域。
+      </p>
+    </div>
+
+    <div class="insight">
+      <div class="insight-label">INSIGHT 04</div>
+      <h3>別忘了預留原生幣當 Gas</h3>
+      <p style="margin-bottom: 0;">
+        每條鏈都要預留原生幣支付手續費——這是最多新手卡關的地方。建議最低保留：
+      </p>
+      <div class="reserve-list">
+        <div class="reserve-item">
+          <span class="reserve-chain">Tron</span>
+          <span class="reserve-amount">15–30 TRX (~$5–10)</span>
+        </div>
+        <div class="reserve-item">
+          <span class="reserve-chain">Ethereum</span>
+          <span class="reserve-amount">0.01 ETH (~$24)</span>
+        </div>
+        <div class="reserve-item">
+          <span class="reserve-chain">Solana</span>
+          <span class="reserve-amount">0.01 SOL (~$1)</span>
+        </div>
+        <div class="reserve-item">
+          <span class="reserve-chain">BSC</span>
+          <span class="reserve-amount">0.005 BNB (~$3)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SECTION 07 STRATEGY ==================== -->
+<section>
+  <div class="container">
+    <div class="section-header">
+      <span class="section-number">07 / 策略</span>
+      <h2>依角色選擇的穩定幣組合</h2>
+      <span class="section-sub">Strategy Matrix</span>
+    </div>
+
+    <div class="strategy-table">
+      <table>
+        <thead>
+          <tr>
+            <th>你的角色</th>
+            <th>推薦穩定幣 × 鏈</th>
+            <th>原因</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="strategy-role">個人小額匯款</td>
+            <td class="strategy-rec">USDT on TON / Solana · USDC on Polygon</td>
+            <td>手續費低 · 熟悉介面</td>
+          </tr>
+          <tr>
+            <td class="strategy-role">跨境商業支付</td>
+            <td class="strategy-rec">USDC on Solana / Base</td>
+            <td>合規 · 速度 · 成本平衡</td>
+          </tr>
+          <tr>
+            <td class="strategy-role">機構級大額結算</td>
+            <td class="strategy-rec">USDC on Ethereum</td>
+            <td>流動性深 · 法遵完整</td>
+          </tr>
+          <tr>
+            <td class="strategy-role">交易所進出金</td>
+            <td class="strategy-rec">USDT on Tron / Solana</td>
+            <td>視交易所支援而定</td>
+          </tr>
+          <tr>
+            <td class="strategy-role">DeFi 使用者</td>
+            <td class="strategy-rec">USDC on Arbitrum / Base</td>
+            <td>L2 生態最完整</td>
+          </tr>
+          <tr>
+            <td class="strategy-role">企業財務整合</td>
+            <td class="strategy-rec">USDC 多鏈 + CCTP</td>
+            <td>Circle 原生跨鏈協議</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+  <div class="container">
+    <div class="disclaimer">
+      <strong>⚠ DISCLAIMER</strong>
+      本報告所載幣價、手續費、供應量皆為 2026 年 4 月前後之參考數據，加密市場波動劇烈，
+      實際操作請以錢包、區塊瀏覽器當下顯示為準。本文內容為資訊整理，
+      <strong style="display: inline; color: var(--warn); letter-spacing: normal;">不構成投資建議或法律意見</strong>。
+    </div>
+
+    <div class="footer-mark">
+      COMPILED <span class="bar"></span>
+      2026 · 04 · 20
+      <span class="bar"></span> END OF REPORT
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
